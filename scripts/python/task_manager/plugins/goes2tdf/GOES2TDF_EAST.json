@@ -1,0 +1,35 @@
+{
+  "name":"GOES2TDF_EAST",
+  "workDirRoot":"/data4/GOES_TDF_DATA",
+  "logDir":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/log",
+  "completeTaskFile":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/etc/GOES2TDF_EAST_complete.json",
+  "primeTasksKey":"DTS",
+  "sortReverseOption":true,
+  "plugin": {
+     "module":"plgnGOES2TDF",
+     "purge":"PURGE",
+     "tasks":"TASKS",
+     "work":"WORK",
+     "goesHeadersFile":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/etc/headers.json",
+     "goesSectorsFile":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/etc/sectors.json",
+     "mcidasPathFile":"goes_mcidas.txt",
+     "binaryPathFile":"goes_binary.txt",
+     "goesInfoFile":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/etc/goes_info.lut",
+     "visToBinExe":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/bin/goes_vis.x",
+     "irToBinExe":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/bin/goes_ir.x",
+     "binToTDFExe":"/local/home/slongmore/Projects/GOES2TDF/ops/GOES2TDF/scripts/bin2tdf/conv_goes_BIN_to_TDF.pl"
+  },
+  "meta": {
+    "bkwdDelta":3600,
+    "DTGfrmts": {
+      "Y":"%Y",
+      "j":"%j"
+    }
+  },
+  "inputs": {
+    "goes": {
+      "dirs":["/mnt/GOES13-RAMM/%Y%j/imager/"],
+      "re":"^(?P<DTS>\\d{13})i(?P<satellite>\\d{2}).c(?P<channel>\\d{2})$"
+    }
+  }
+}

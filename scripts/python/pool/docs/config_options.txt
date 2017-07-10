@@ -1,0 +1,237 @@
+GENERAL CONFIG FILE OPTIONS:
+
+
+**********[plugins]***********
+Description:  
+	The [plugins] section controls options related to plugin discovery as well 
+	as options to control which plugins are used to perform processing. 
+	
+Options:
+	[plugins], plugins_root_dir = (Optional) This is the root path where the plugin loader 
+		will look for plugins.  If this option is not present, then the program 
+		will look in a folder named "plugins" inside the current working 
+		directory.
+
+	[plugins], file_gather_plugin = Path to the file gather plugin. This should be 
+		relative to the path specified by the "plugins_root_dir" option.  The 
+		file gather plugin should accept input from the "[file_gather]" 
+		section in order to generate a list of files that may be processed by 
+		the "create" command.
+
+	[plugins], logging_plugin = (Optional) Path to the logging plugin. This should be 
+		relative to the path specified by the "plugins_root_dir" option. If 
+		this option is not present, then the program will look for the 
+		logging configuration file specified by the "config_file" option in 
+		the "[logging]" section. If the "config_file" option is not present, 
+		then the default logger will be used.  The level of the default logger 
+		can be specified with the "level" option in the "[logging]" section.
+		
+	[plugins], database_plugin = Path to the database plugin.  This should be 
+		relative to the path specified by the "plugins_root_dir" option. 
+		Database plugins should accept input from the "[database]" section in 
+		order to add filenames to the database.  
+		
+	[plugins], file_reader_plugin = Path to the file reader plugin.  This 
+		should be relative to the path specified by the "plugins_root_dir" 
+		option.  A file reader plugin should use options from the 
+		"[file_reader]" section to configure itself.
+		
+	[plugins], query_writer_plugin = (Optional) Path to the query writer plugin.  This 
+		should be relative to the path specified by the "plugins_root_dir" 
+		option.  After the code has found every file intersecting the query bounding 
+		box and combined/trimmed the contents of these files, the plugin will write 
+		these values to a file.  If this option is not present, then rather than 
+		perform a full query, only the files intersecting the query bounding box 
+		will be found.
+
+**********[logging]***********
+Description:
+	The [logging] section controls behavior related to logging.
+
+Options:
+	[logging], config_file = (Optional) If the "logging_plugin" option is not specified,
+		then the program will attempt to setup the logging system with the 
+		logging config file specified by this option. (See:  
+		https://docs.python.org/2/howto/logging.html#logging-basic-tutorial for 
+		information on how to setup a logging config file.)  If this option is 
+		not provided, then the program will use the default logger. The level 
+		of the default logger can be specified with the "level" option.
+
+	[logging], level = (Optional) If both the "logging_plugin" and "config_file" option 
+		are not provided then the program will use python's "basicConfig" 
+		logger.  If this option is provided, then the log level will be 
+		specified by one of the following key words: DEBUG, INFO, WARNING, 
+		ERROR, CRITICAL.  If this option is not provided, then the logger will 
+		default to the WARNING log level.  See 
+		https://docs.python.org/2/howto/logging.html#logging-basic-tutorial for
+		information on log levels. The DEBUG level provides the most 
+		information and CRITICAL provides the least.  Use DEBUG or INFO for 
+		detailed information about the running program.
+
+	[logging], warn_on_missing_fraction_threshold = (Optional) During an update
+		operation, the program will keep track of how many footprints in a file
+		contain missing lat, lon or time information. If the fraction of the 
+		footprints that contain missing data exceeds the amount specified by 
+		this option, a warning will be logged.  The default fraction is 0.7. 
+		
+**********[query]**********
+Description:
+	The [query] section specifies a spatial bounding box and a time window.  
+	The query operation will use this information to find which files in the 
+	pool intersect the bounding box and time window.  The program will then 
+	optionally gather the contents of each file that lies within the bounding 
+	box and time window and write the gathered information.  Options in the 
+	[query] section deal specifically with retrieving data from the database 
+	and will be ignored during a "create" or "update" command.
+
+Options:
+	[query], center_lat = Specifies the center latitude of the search window 
+	    for a query. Should be between -90 and 90 (southern hemisphere is 
+		negative).
+	
+	[query], center_lon = Specifies the center longitude of the search window 
+	    for a query. Should be between -180 and 180 (western hemisphere is 
+		negative).
+	
+	[query], height_lat = Specifies the search window height in degrees 
+	    latitude. Search windows that extend above/below 90/-90 degrees 
+		latitude are clamped at 90/-90 degrees.
+	
+	[query], width_lon = Specifies the search window width in degrees 
+		longitude. Search windows that extend beyond -180 and 180 degrees 
+		will wrap around the earth.  Search window widths greater than
+		360 degrees will generate an error.  Additionally, if a search window 
+		extends more than 180 degrees past -180 lon or 180 lon will generate an
+		error.
+		
+	[query], time = Specifies the center time of the query.  If no "[query], 
+	    time_format" option is present, then the time should be of the form: 
+		    "YYYY-MM-DD-HH-MM-SS".
+	
+	[query], time_format = (Optional) Specifies the format string used to parse
+	    the "[query], time" option.  Default is "%Y-%m-%d-%H-%M-%S".  
+		(See https://docs.python.org/2/library/datetime.html#strftime-strptime-behavior 
+		for documentation on parsing time from strings.)
+	
+	[query], seconds_after = Specifies the number of seconds after the 
+	    "[query], time" option the query time window will extend.
+	
+	[query], seconds_before = Specifies the number of seconds before the 
+	    "[query], time" option the query time window will extend.
+		
+	[query], query_txt_output_file = (Optional) When a query is performed, the 
+	    code will generate a list of filenames that intersect the provided 
+		bounding box.  If this option is specified, the program will write this 
+		list to an ascii file with the provided filename.
+		
+	[query], output_file = If a "query_writer_plugin" was specified, then the 
+	    program will gather the values from all desired variables that lie 
+		within the query bounding box and write the resulting arrays to the 
+		filename specified by this option.
+		
+	[query], var_list = If a "query_writer_plugin" was specified, then the 
+	    program will gather the values from all desired variables that lie 
+		within the query bounding box.  This option is a comma separated list of 
+		variable names to be gathered from the data files and combined into a 
+		query.
+        
+        For example, to gather the latitude, longitude and time values from a 
+		NUCAPS file, use the following line:
+            var_list = Latitude, Longitude, Time
+
+	[query], shared_var_list = ****NOT YET IMPLEMENTED**** If a 
+	    "query_writer_plugin" was specified, then the 
+	    program will gather the values from all desired variables that lie 
+		within the query bounding box.  However, some variables may be the same 
+		across input files (ie: pressure levels)  rather than performing a 
+		spatial test and combining these values into an array, it may make sense 
+		to simply copy a single array into the query output file.  This option 
+		specifies the desired list of shared variables as a comma separated 
+		list.
+		
+		ex:
+		    shared_var_list = Foo, Bar
+		
+PLUGIN SPECIFIC OPTIONS:
+
+**********Basic File Gather**********
+Location:
+	plugins/file_gather/basic_filegather.py
+
+Description:
+	The basic file gather plugin  will search a directory for all the files 
+	that match a regular expression and return a list of their filenames.
+
+Options:
+
+	[plugins], file_gather_plugin = Specifies the location of the plugin 
+		relative to the path specified in the "[plugins], plugins_root_dir" option.
+		
+	[file_gather], gather_dir = Specifies the directory that the plugin will 
+		search.
+		
+	[file_gather], regex = Sets the regular expression that the plugin will use
+		to match files. (See 
+		https://docs.python.org/2/howto/regex.html for documentation on regular
+		expressions).
+
+Example Config Setup:
+	The following options will use the plugin to look for files in the 
+	"foo/dir_to_gather_files_from/" directory matching any file that
+	starts with "foo" and has a digit at the end (such as foo3).
+
+	[plugins]
+	file_gather_plugin = file_gather/basic_file_gather.py
+
+	[file_gather]
+	gather_dir = foo/dir_to_gather_files_from/
+	regex = foo\d.csv
+
+	
+**********Sparse Ascii Grid Database**********
+Location:
+	plugins/database/sparse_ascii_grid_database.py
+	
+Description:
+	The sparse ascii grid database divides the globe into a (lat, lon, time) 
+	grid.  Grid cells store a list of files that intersect with them.  Grid 
+	cells are only created if at least one file intersects with them.
+	
+Options:
+
+	[plugins], database_plugin = Specifies the location of the plugin 
+		relative to the path specified in the "[plugins], plugins_root_dir" option.
+
+	[database], location = Specifies the path where the database should be read/written to/from.
+	
+	[database], grid_spacing_lon = (optional) Specifies the size in degrees 
+	    longitude of the grid cells. The default is 1 degree.  This option is 
+		used exclusively during the create operation.
+	
+	[database], grid_spacing_lat = (optional) Specifies the size in degrees 
+	    latitude of the grid cells. The default is 1 degree.  This option is 
+		used exclusively during the create operation.
+	
+	[database], grid_spacing_seconds = (Optional) Specifies the size in seconds 
+	    of the grid cells. The default is 3600 seconds (one hour).  This option 
+		is used exclusively during the create operation.
+	
+**********NUCAPS IO**********
+Location:
+	plugins/io/nucaps_io.py
+	
+Description:
+	The nucaps io plugin reads nucaps data.
+
+Options:
+	[plugins], file_reader_plugin = Specifies the location of the plugin 
+		relative to the path specified in the "[plugins], plugins_root_dir" option.
+		
+	[nucaps], lats_var_name = The name of the latitude variable.
+	
+	[nucaps], lons_var_name = The name of the longitude variable.
+	
+	[nucaps], time_var_name = The name of the time variable.
+	
+	[nucaps], time_scale = The scalar needed in order to convert the time 
+	    variable to seconds from Jan 1, 1970.

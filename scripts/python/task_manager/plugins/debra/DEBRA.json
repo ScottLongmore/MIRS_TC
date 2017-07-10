@@ -1,0 +1,29 @@
+{
+  "name":"DEBRA",
+  "workDirRoot":"/local/home/slongmore/Projects/DEBRA/dev/DEBRA/work/",
+  "logDir":"/local/home/slongmore/Projects/DEBRA/dev/DEBRA/log",
+  "completeTaskFile":"/local/home/slongmore/Projects/DEBRA/dev/DEBRA/etc/DEBRA_complete.json",
+  "primeTasksKey":"DTS",
+  "sortReverseOption":true,
+  "plugin": {
+     "module":"plgnDEBRA",
+     "purge":"PURGE",
+     "tasks":"TASKS",
+     "work":"WORK",
+     "XPIFToBinExe":"/local/home/slongmore/Projects/DEBRA/dev/DEBRA/bin/MSG_MAIN",
+     "BinToTDFScp":"/local/home/slongmore/Projects/DEBRA/dev/DEBRA/scripts/CONV_MSG3_BIN2TDF.pl",
+     "DEBRAScp":"/local/home/smiller/DEBRA/MSG_DEBRA/msg_dust_DEBRA_driver_CIRA_FEED.pl"
+  },
+  "meta": {
+    "bkwdDelta": 900,
+    "DTGfrmts": {
+      "Y":"%Y"
+    }
+  },
+  "inputs": {
+    "MSG": {
+      "dirs":["/local/home/slongmore/Projects/DEBRA/data/test"],
+      "re":"^(?P<DTS>\\d{4}_\\d{3}_\\d{4})_MSG03(_\\d{14})*.zip$"
+    }
+  }
+}

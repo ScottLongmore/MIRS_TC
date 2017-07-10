@@ -1,0 +1,1 @@
+python tests/unit_test_suite.py tests/unit_tests/

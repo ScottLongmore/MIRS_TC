@@ -1,0 +1,99 @@
+{
+  "Data":{
+    "module":"rza_class",
+    "class":"rza"
+  },
+  "Dimensions":{
+    "height":21,
+    "radius":31
+  },
+  "Variables":{
+    "height":{
+      "type":"f8",
+      "dimensions":["height"],
+      "standard_name":"height",
+      "long_name":"height",
+      "units":"km",
+      "axis":"Z",
+      "positive":"up",
+      "data_names":["heights"]
+    },
+    "radius":{
+      "type":"f8",
+      "dimensions":["radius"],
+      "standard_name":"radius",
+      "long_name":"radius",
+      "units":"km",
+      "axis":"X",
+      "data_names":["ranges"]
+    },
+    "map":{
+      "type":"f8",
+      "dimensions":["height","radius"],
+      "standard_name":"air_pressure",
+      "long_name":"mean azimuthal pressure",
+      "units":"hPa",
+      "valid_range":[0.0, 109000.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["rza_p"]
+    },
+    "mad":{
+      "type":"f8",
+      "dimensions":["height","radius"],
+      "standard_name":"air_density",
+      "long_name":"mean azimuthal density",
+      "units":"kg m-3",
+      "valid_range":[0.0, 3.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["rza_d"]
+    },
+    "mat":{
+      "type":"f8",
+      "dimensions":["height","radius"],
+      "standard_name":"air_temperature",
+      "long_name":"mean azimuthal temperature",
+      "units":"K",
+      "valid_range":[0.0, 350.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["rza_t"]
+    },
+    "magw":{
+      "type":"f8",
+      "dimensions":["height","radius"],
+      "standard_name":"wind_speed",
+      "long_name":"mean azimuthal gradient wind speed",
+      "units":"m s-1",
+      "valid_range":[-125.0, 125.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["rza_gw"]
+    }
+  },
+  "Attributes":{
+    "missing_value":-999.9,
+    "Conventions":"CF-1.5",
+    "Metadata_Conventions":"CF-1.5, Unidata Dataset Discovery 1.0",
+    "standard_name_vocabulary":"CF Standard Name Table (version 17, 24 March 2011)",
+    "project":"S-NPP Data Exploitation",
+    "institution":"DOC/NOAA/NESDIS/NDE > S-NPP Data Exploitation, NESDIS, NOAA, U.S. Department of Commerce",
+    "naming_authority":"gov.noaa.nesdis.nde",
+    "title":"NPP_TC",
+    "summary":"S-NPP ATMS tropical cyclone wind intensity and surface wind radii thresholds",
+    "history":"NPP_TC Version 1",
+    "processing_level":"NOAA Level 3",
+    "source":"MiRS-V9, ATCF, GFS",
+    "id":"",
+    "creator_name":"CSU/CIRA/RAMMB",
+    "creator_email":"Andrea.Schumacher@colostate.edu, Jack.Dostalek@colostate.edu, Scott.Longmore@colostate.edu",
+    "creator_url":"http://rammb.cira.colostate.edu",
+    "publisher_name":"DOC/NOAA/NESDIS/NDE > S-NPP Data Exploitation, NESDIS, NOAA, U.S. Department of Commerce",
+    "publisher_email":"espcoperations@noaa.gov"
+  }
+}

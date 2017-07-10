@@ -1,0 +1,6 @@
+n_files: 5
+file_a.nc
+file_b.nc
+file_c.nc
+file_d.nc
+file_e.nc

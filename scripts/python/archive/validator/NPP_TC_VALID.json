@@ -1,0 +1,35 @@
+{
+  "library":"libNPP_TC",
+  "inputs":{
+    "adeck":{
+       "dirs":["."],
+       "re":"^(?P<source>jtwc|nhc)_a(?P<stormId>(?P<basinId>\\w{2})(?P<stormNum>\\d{2})(?P<year>\\d{4}))\\.dat\\.(?P<DTG>\\d{12})$",
+       "delta":86400,
+       "method":"adeck",
+       "validate":"adeckValid",
+       "file_key":"adeck_input"
+    },
+    "gfs":{
+       "dirs":["."],
+       "re":"^gfs\\.t(?P<hour>\\d{2})z\\.pgrb2\\.1p00\\.f(?P<fhour>\\d{3})\\.(?P<gdate>\\d{8})$",
+       "delta":129600,
+       "method":"gfs",
+       "validate":"gfsValid",
+       "file_key":"gfs_input"
+    },
+    "mirs_snd":{
+       "dirs":["."],
+       "re":"^NPR-MIRS-SND_(\\w+)_(\\w+)_s(\\d{14,15})_e(\\d{14,15})_c(\\d{14,15})\\.nc$",
+       "delta":43200,
+       "method":"atms",
+       "file_key":"mirs_snd_input"
+    },
+    "mirs_img":{
+       "dirs":["."],
+       "re":"^NPR-MIRS-IMG_(\\w+)_(\\w+)_s(\\d{14,15})_e(\\d{14,15})_c(\\d{14,15})\\.nc$",
+       "delta":43200,
+       "method":"atms",
+       "file_key":"mirs_img_input"
+    }
+  }
+}

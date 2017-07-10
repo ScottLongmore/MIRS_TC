@@ -1,0 +1,26 @@
+{
+  "name":"gfs_hur",
+  "workDirRoot":"/home/cslocum/research/realtime_products",
+  "logDir":"/home/cslocum/research/realtime_products/log",
+  "completeTaskFile":"/home/cslocum/research/realtime_products/log/gfs_hur_complete.json",
+  "primeTasksKey":"DTS",
+  "sortReverseOption":true,
+  "plugin": {
+     "module":"plgnGFS",
+     "purge":"PURGE",
+     "tasks":"TASKS",
+     "work":"WORK"
+  },
+  "meta": {
+    "bkwdDelta": 43200,
+    "DTGfrmts": {
+      "Y":"%Y"
+    }
+  },
+  "inputs": {
+    "grib2": {
+      "dirs":["/mnt/tcnas03/hfip/model_data/gfs/%Y/0p25/grib2/"],
+      "re":"^gfs.(?P<DTS>\\d{10}).pgrb2.0p25.f(?P<fcst>\\d{3})$"
+    }
+  }
+}

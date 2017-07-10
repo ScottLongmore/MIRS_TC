@@ -1,0 +1,172 @@
+{
+  "Data":{
+    "module":"xya_class",
+    "class":"xya"
+  },
+  "Dimensions":{
+    "levels":12,
+    "lats":61,
+    "lons":61
+  },
+  "Variables":{
+    "levels":{
+      "type":"f8",
+      "dimensions":["levels"],
+      "standard_name":"air_pressure",
+      "long_name":"pressure",
+      "units":"Pa",
+      "axis":"Z",
+      "positive":"down",
+      "conversion":["levels"],
+      "data_names":["xya_p"]
+    },
+    "lats":{
+      "type":"f8",
+      "dimensions":["lats"],
+      "standard_name":"latitude",
+      "long_name":"latitude",
+      "units":"degrees_north",
+      "axis":"Y",
+      "conversion":["latitudes"],
+      "data_names":["xya_lat"]
+    },
+    "lons":{
+      "type":"f8",
+      "dimensions":["lons"],
+      "standard_name":"longitude",
+      "long_name":"longitude",
+      "units":"degrees_east",
+      "axis":"X",
+      "conversion":["longitudes"],
+      "data_names":["xya_lon"]
+    },
+    "st":{
+      "type":"f8",
+      "dimensions":["lats","lons"],
+      "standard_name":"surface_temperature",
+      "long_name":"surface temperature",
+      "units":"K",
+      "valid_range":[0.0, 410.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["xya_st"]
+    },
+    "su":{
+      "type":"f8",
+      "dimensions":["lats","lons"],
+      "standard_name":"eastward_wind",
+      "long_name":"surface eastward wind",
+      "units":"kt",
+      "valid_range":[-250.0, 250.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["xya_su"]
+    },
+    "sv":{
+      "type":"f8",
+      "dimensions":["lats","lons"],
+      "standard_name":"northward_wind",
+      "long_name":"surface northward wind",
+      "units":"kt",
+      "valid_range":[-250.0, 250.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["xya_sv"]
+    },
+    "slp":{
+      "type":"f8",
+      "dimensions":["lats","lons"],
+      "standard_name":"surface_air_pressure",
+      "long_name":"surface sea level pressure",
+      "units":"Pa",
+      "valid_range":[85000.0, 109000.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["xya_slp"]
+    },
+    "sclw":{
+      "type":"f8",
+      "dimensions":["lats","lons"],
+      "standard_name":"atmosphere_cloud_liquid_water_content",
+      "long_name":"atmsphere cloud liquid water content",
+      "units":"kg m-2",
+      "valid_range":[0.0, 3.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose2D"],
+      "data_names":["xya_sclw"]
+    }, 
+    "t":{
+      "type":"f8",
+      "dimensions":["levels","lats","lons"],
+      "standard_name":"air_temperature",
+      "long_name":"temperature",
+      "units":"K",
+      "valid_range":[0.0, 410.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose3D"],
+      "data_names":["xya_t"]
+    },
+    "u":{
+      "type":"f8",
+      "dimensions":["levels","lats","lons"],
+      "standard_name":"eastward_wind",
+      "long_name":"eastward wind",
+      "units":"kt",
+      "valid_range":[-250.0, 250.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose3D"],
+      "data_names":["xya_u"]
+    },
+    "v":{
+      "type":"f8",
+      "dimensions":["levels","lats","lons"],
+      "standard_name":"northward_wind",
+      "long_name":"northward wind",
+      "units":"kt",
+      "valid_range":[-250.0, 250.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose3D"],
+      "data_names":["xya_v"]
+    },
+    "z":{
+      "type":"f8",
+      "dimensions":["levels","lats","lons"],
+      "standard_name":"geopotential_height",
+      "long_name":"geopotential height",
+      "units":"m",
+      "valid_range":[0.0, 18000.0],
+      "missing_value":-999.9,
+      "_FillValue":-999.9,
+      "conversion":["transpose3D"],
+      "data_names":["xya_z"]
+    }
+  }, 
+  "Attributes":{
+    "missing_value":-999.9,
+    "Conventions":"CF-1.5",
+    "Metadata_Conventions":"CF-1.5, Unidata Dataset Discovery 1.0",
+    "standard_name_vocabulary":"CF Standard Name Table (version 17, 24 March 2011)",
+    "project":"S-NPP Data Exploitation",
+    "institution":"DOC/NOAA/NESDIS/NDE > S-NPP Data Exploitation, NESDIS, NOAA, U.S. Department of Commerce",
+    "naming_authority":"gov.noaa.nesdis.nde",
+    "title":"NPP_TC",
+    "summary":"S-NPP ATMS tropical cyclone wind intensity and surface wind radii thresholds",
+    "history":"NPP_TC Version 1",
+    "processing_level":"NOAA Level 3",
+    "source":"MiRS-V9, ATCF, GFS",
+    "id":"",
+    "creator_name":"CSU/CIRA/RAMMB",
+    "creator_email":"Andrea.Schumacher@colostate.edu, Jack.Dostalek@colostate.edu, Scott.Longmore@colostate.edu",
+    "creator_url":"http://rammb.cira.colostate.edu",
+    "publisher_name":"DOC/NOAA/NESDIS/NDE > S-NPP Data Exploitation, NESDIS, NOAA, U.S. Department of Commerce",
+    "publisher_email":"espcoperations@noaa.gov"
+  }
+}

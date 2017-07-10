@@ -1,0 +1,55 @@
+RELEASE_NOTES.TXT -  NPOESS Preparatory Project (NPP) Tropical Cyclone (TC) Science Algorithm (SA) RELEASE_NOTES.TXT file
+             
+Author: Scott Longmore, Cooperative Institute for Research in the Atmosphere (CIRA) 
+Contact: Scott.Longmore@colostate.edu
+Last Edit: 2017-07-10
+
+2017/07/10  v2.0.0 - New python driver (mirs_tc.py), new data pool (scripts/python/pool), new operat (src/operat) 
+2015/05/15  v1.5.4 - Removed legacy version of nbevs routine insrc/oparet/nbevs.f90, updated besubs.f90 
+2015/05/15  v1.5.3 - OPERATIONAL RELEASE
+                   - Logging update requested by NDE, WARNING issued when pool_query.py finds no matching records,d
+                     sub-programs that exit normally but do not produce output produce WARNING. 
+                   - QC.TXT link issues for multiple storms fixed
+                   - oparet coefficients updated, minor updates
+                   - JPSS satellite variables (for future) commented out
+2015/02/02  v1.5.2 - GFS file naming update 
+2014/12/10  v1.5.1 - oparet fix for SH storms
+                     ShortTermTrack fix for invest storms (missing positions)
+                     netCDF global attribute fixes/updates 
+2014/11/09  v1.5.0 - Added ATMS QC > 1 for +20% of retrievals, exits algorithm 
+                   - Fix for M12 of ShortTermTrack to current synoptic time
+                   - ATMS time windows adjusted, gettimes.sh replaced with datetimes.py
+		   - XYA/RZA netCDF CF compliance fixes, standard names, valid range, units
+		   - JTWC ATCF/FIX filename convention added to products
+                   - npp_tc.py scheduler added, eventually will replace master script NPP_TC.sh
+2014/07/30  v1.4.2 - Problems with new graphics code on newer ATMS MIRS data 
+                     reverted to previous version of plotting code
+2014/07/20  v1.4.1 - Added non-zero exit code status in ShortTermTrack for corrupt ATCF files 
+                     Updated plotting code, graphics fill more of the frame
+2014/07/03  v1.4.0 - Algorithm replaced MIRS ATMS cloud liquid water (clw) with liquid water path (lwp) 
+                     to incorporate precipitating (eyewall/rainband) retrievals and added bias correction.
+                   - Some sub-program (ShortTermTrack, Oparet) log designators changed from WARNING to INFO 
+                     for non-critical exceptions (00 or -12 ATCF fix missing, swath too far from storm, etc) 
+2014/05/01  v1.3.4 - Removed dependency on MIRS ATMS attributes with data_pool and oparat changes
+                     Added etc/oparet.cfg for correct scaling and offsets
+                     Removed TC Sandy case setup/clean scripts, TC test case scripts included with 
+                     seperate case data tar file
+2014/03/06  v1.3.3 - PCF validator, removes older adeck/gfs files, fix for leap year in NPP_TC_GETTIMES.sh
+2014/02/08  v1.3.2 - netCDF bug fixes, minor updates 
+                   - ERROR to WARNING messages for sub-programs inside storm loop, so if one TC fails,
+                     remaining TC's are processed 
+2014/02/02  v1.3.1 - netCDF converter for RZA files
+2014/01/27  v1.3.0 - netCDF converter for XYA files, MiRS file fix
+2014/01/07: v1.2.3 - ATCF (adeck), GFS grib file naming, product version in file names
+2013/11/14: v1.2.2 - Data test case inclusion
+2013/11/08: v1.2.1 - PCF formatting, required NDE and data input variable upgrades 
+                   - Data, temporary sub-directory hierarchy handling
+                   - Static variables to master script, external and data variables to PCF
+                   - Date format/handling between NDE and master script
+                   - Executable/script location execution handling from working to operation directory 
+                   - PSF output file location and naming is now absolute 
+                   - LOG file location to top working directory
+2013/10/31: v1.2.0 - NDE framework upgrades: PCF, PSF, logging, exception handling
+                   - GFS grib to pack file converter
+2013/06/25: v1.1.0 - NDE initial version
+2013/06/14: v1.0.0 - Initial version
