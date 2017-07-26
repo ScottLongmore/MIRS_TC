@@ -489,30 +489,43 @@ def execute(commandList,commandArgs,commandID,logDir,stdoutFile='',stderrFile=''
 
 def workDir(workPath):
     """
-    workDir - creates and changes to working directory 
+    workDir - creates working directory 
 
     Returns
     -------
     status - boolean whether it executed properly
     """
 
-    if not os.path.exists(workPath):
-        LOG.debug('Creating working directory: {}'.format(workPath))
+    if os.path.exists(workPath):
+        LOG.info('Working directory: {} exists'.format(workPath))
+    else:
+        LOG.info('Creating working directory: {}'.format(workPath))
         try:
             os.makedirs(workPath)
         except:
             msg = "Unable to create work dir {}".format(workPath)
             error(LOG, msg, error_codes.EX_IOERR)
 
+    return True
+
+def cdDir(cdPath):
+    """
+    cdDir - changes t directory 
+
+    Returns
+    -------
+    status - boolean whether it executed properly
+    """
+
     # CD to work directory
     try:
-        LOG.debug('Changing to working directory: {}'.format(workPath))
-        os.chdir(workPath)
+        LOG.info('Changing to working directory: {}'.format(cdPath))
+        os.chdir(cdPath)
     except:
-        msg = "Unable to change to work dir: {}".format(workPath)
+        msg = "Unable to change to work dir: {}".format(cdPath)
         error(LOG, msg, error_codes.EX_IOERR)
 
-    return
+    return True
 
 def moveFile(sourceDir,filename,destDir,newFilename=None):
 
@@ -560,26 +573,18 @@ def linkFile(sourceDir,filename,destDir,newFilename=None):
 
     return(destFile)
 
-def schemaValidate(inputDict,schema):
+def regexpFiles(regexp,Dir):
 
-    inputJson=json.loads(json.dumps(inputDict))
-    if schema["$schema"] == "http://json-schema.org/draft-04/schema#":
-        v = jsonschema.Draft4Validator(schema)
-    elif schema["$schema"] == "http://json-schema.org/draft-03/schema#":
-        v = jsonschema.Draft3Validator(schema)
-    else:
-        msg="Schema needs to be a recoginized meta-schema [Draft 3, Draft 4]"
-        error(LOG,msg,error_codes.EX_IOERR)
+    filenames=os.listdir(Dir)
+    matchFiles={}
+    for filename in filenames:
+       m=re.match(regexp,filename)
+       if os.path.isfile(filename) and m:
+          print("match file: {}".format(filename))
+          fields=m.groupdict()
+          matchFiles[filename]=fields
 
-    msg=None
-    errs = sorted(v.iter_errors(inputDict), key=lambda e: e.path)
-    if errs:
-        msg = ""
-        for err in errs:
-            msg += err.message
-
-    return(msg)
-
+    return(matchFiles)
 
 def schemaValidate(inputDict,schema):
 
@@ -600,4 +605,77 @@ def schemaValidate(inputDict,schema):
             msg += err.message
 
     return(msg)
+
+
+def schemaValidate(inputDict,schema):
+
+    inputJson=json.loads(json.dumps(inputDict))
+    if schema["$schema"] == "http://json-schema.org/draft-04/schema#":
+        v = jsonschema.Draft4Validator(schema)
+    elif schema["$schema"] == "http://json-schema.org/draft-03/schema#":
+        v = jsonschema.Draft3Validator(schema)
+    else:
+        msg="Schema needs to be a recoginized meta-schema [Draft 3, Draft 4]"
+        error(LOG,msg,error_codes.EX_IOERR)
+
+    msg=None
+    errs = sorted(v.iter_errors(inputDict), key=lambda e: e.path)
+    if errs:
+        msg = ""
+        for err in errs:
+            msg += err.message
+
+    return(msg)
+
+def replaceStructValues(struct,regexp,function,functionArgs):
+
+    if not callable(function):
+        msg="Function: {} not callable".format(function)
+        error(LOG,msg,error_codes.EX_DATAERR)
+
+    if not isinstance(functionArgs,list):
+        msg="Function Args not a list".format(functionArgs)
+        error(LOG,msg,error_codes.EX_DATAERR)
+
+    if not isinstance(struct,(list,dict)):
+        msg="Structure not list or dict"
+        error(LOG,msg,error_codes.EX_DATAERR)
+
+    for key in struct: 
+       if isinstance(str(struct[key]),list):
+          replaceStructValues(struct[key],regexp,function,functionArgs)
+       if isinstance(struct[key],dict):
+          if re.match(regexp,key):
+             for ikey in struct[key]:
+                 struct[key][ikey]=replaceFunction(struct[key][ikey],function,functionArgs)
+          else:
+              replaceStructValues(struct[key],regexp,function,functionArgs)
+       elif isinstance(struct[key], basestring):
+          if re.match(regexp,key):
+             struct[key]=replaceFunction(struct[key],function,functionArgs)
+
+    return
+
+def replaceFunction(value,function,functionArgs):
+
+    args=[]
+    try:
+        args=list(functionArgs)
+        args.append(value)
+        value=function(args)
+    except:
+        msg="Function: {} failed for value: {}".format(function,value)
+        error(LOG,msg,error_codes.EX_DATAERR)
+
+    return(value)
+
+def prependAbsPath(args):
+    absPath=args[0]
+    subPath=args[1]
+    if os.path.isabs(absPath) and not os.path.isabs(subPath):
+       return(os.path.join(absPath,subPath))
+    else:
+        msg="{} is not absolute or {} is not relative path".format(absPath,subPath)
+        utils.error(LOG,msg,error_codes.EX_DATAERR)
+
 

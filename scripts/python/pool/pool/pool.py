@@ -320,6 +320,10 @@ def update(config):
     if processed_file_database_plugin is not None:
         processed_file_database = processed_file_database_plugin.open_database(config)
 
+    should_print_progress = True
+    if config.has_option(cfg.LOGGING_SEC, "should_print_update_progress"):
+        should_print_progress = config.getboolean(cfg.LOGGING_SEC, "should_print_update_progress")      
+        
     progress = 0
     N_files = len(gathered_files)
     for filename in gathered_files:
@@ -327,8 +331,11 @@ def update(config):
             LOGGER.debug("File: %s already in processed file database, skipping file.", filename)
             continue
 
-        LOGGER.debug("Adding file: {} to database.".format(filename))
-        LOGGER.debug("Progress: {}/{} {}%".format(progress, N_files, float(progress)/float(N_files)*100))
+        if should_print_progress:
+            print "Adding file: ", filename," to database."
+            print "Progress: ", progress, "/", N_files, " ", float(progress)/float(N_files)*100,'%'
+            
+        LOGGER.debug("Adding file: %s to database.", filename)
         progress += 1
         try:
             file_data = file_reader_plugin.get_data(config, filename, var_creation_plugins)
@@ -498,7 +505,6 @@ def _write_txt_filenames(config, filenames):
     if config.has_option(cfg.QUERY_SEC, "query_txt_output_file"):
         output_filename = config.get(cfg.QUERY_SEC, "query_txt_output_file")
         LOGGER.info("Writing query filenames to: %s", output_filename)
-        print "Writing query filenames to: ", output_filename
         output_string = "\n".join(filenames)
         with open(output_filename, "w") as out_file:
             out_file.write("n_files:%06d\n" % (len(filenames)))

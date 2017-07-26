@@ -34,26 +34,30 @@ schema={
 
 class gfs(dataset):
 
-    def __init__(self,filename):
+    def __init__(self,filepath):
 
         self.regexp=regexp
         self.schema=schema
 
-        super(gfs,self).__init__(filename)
+        super(gfs,self).__init__(filepath)
 
         self.properties['hour']=int(self.properties['hour'])
         self.properties['fhour']=int(self.properties['fhour'])
         DTS="{}{}".format(self.properties['runDTG'],self.properties['hour'])
         self.properties['runDTG']=datetime.datetime.strptime(DTS,"%Y%m%d%H")
 
-def latestGFS(gfsList):
+def latestGFS(config,metadata,dataname):
 
-    latestGFS=gfsList.pop(0)
-    for gfs in gfsList: 
-
-        runDTG=gfs.getProperty('runDTG')
-        if runDTG > latestGFS.getProperty('runDTG'):
-            latestGFS=gfs
-
+    try:
+        latestGFS=metadata[dataname].pop(0)
+        for gfs in metadata[dataname]: 
+    
+            runDTG=gfs.get('runDTG')
+            if runDTG > latestGFS.get('runDTG'):
+                latestGFS=gfs
+    except:
+        msg="Problem filtering dataname object list".format(dataname)
+        utils.error(LOG,msg,error_codes.EX_DATAERR)
+    
     return([latestGFS])
  

@@ -33,7 +33,7 @@ class NDimenNavigationIterator(object):
 
 class SciData(object):
     def __init__(self, config, filename, var_creation_plugins):
-        LOGGER.info("Initializing SciData instance from file %s.", filename)
+        LOGGER.debug("Initializing SciData instance from file %s.", filename)
         self.filename = filename
         
         self.using_hdf = False
@@ -50,7 +50,7 @@ class SciData(object):
         self.time_var_name = config.get("nc_hdf_io", "time_var_name")
         self.time_scale = config.getfloat("nc_hdf_io", "time_scale")        
         
-        LOGGER.info("Finished initializing SciData instance from file %s.", filename)
+        LOGGER.debug("Finished initializing SciData instance from file %s.", filename)
         
     def _init_generated_vars(self, config, var_creation_plugins):
         for plugin in var_creation_plugins:
@@ -86,7 +86,7 @@ class SciData(object):
 
     #Required by the plugin
     def get_navigation_iterator(self, config):
-        LOGGER.info("Generating SciData navigation iterator for file %s.", self.filename)
+        LOGGER.debug("Generating SciData navigation iterator for file %s.", self.filename)
         
         subsample_step_size = 1
         if config.has_option("nc_hdf_io", "subsample_step_size"):
@@ -97,7 +97,7 @@ class SciData(object):
             self._get_item_without_copy(self.time_var_name), self.time_scale, 
             subsample_step_size)
         
-        LOGGER.info("Finished generating SciData navigation iterator for file %s.", self.filename)
+        LOGGER.debug("Finished generating SciData navigation iterator for file %s.", self.filename)
         return it                      
     
     #Required by the plugin
@@ -110,7 +110,8 @@ class SciData(object):
         if len(data.shape) == 0:
             return data[()]
 
-        return data[indices]
+        indices_out_to_max_dimen = indices[:len(data.shape)]
+        return data[indices_out_to_max_dimen]
         
     #Required by the plugin    
     def get_global_meta_data(self, config):
@@ -126,9 +127,9 @@ class SciData(object):
         
 #Required by the plugin
 def get_data(config, filename, var_creation_plugins):
-    LOGGER.info("Retrieving SciData object from file %s.", filename)
+    LOGGER.debug("Retrieving SciData object from file %s.", filename)
     
     data = SciData(config, filename, var_creation_plugins)
     
-    LOGGER.info("Finished retrieving SciData object from file %s.", filename)   
+    LOGGER.debug("Finished retrieving SciData object from file %s.", filename)   
     return data

@@ -114,7 +114,8 @@ cssm12=0
 ! Read time information of satellite swath
 !nchar=LEN_TRIM(satdir)
 ! Year
-infile=sysid//'_'//systime//'_'//csat//'.years'
+infile='years.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.years'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.years'
 CALL rdasciidat(infile,luin)
 ALLOCATE(syr(i1num))
@@ -123,7 +124,8 @@ DO n=1,i1num
 ENDDO
 
 ! Month
-infile=sysid//'_'//systime//'_'//csat//'.months'
+infile='months.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.months'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.months'
 CALL rdasciidat(infile,luin)
 ALLOCATE(smo(i1num))
@@ -132,7 +134,8 @@ DO n=1,i1num
 ENDDO
 
 ! Day
-infile=sysid//'_'//systime//'_'//csat//'.days'
+infile='days.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.days'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.days'
 CALL rdasciidat(infile,luin)
 ALLOCATE(sdy(i1num))
@@ -141,7 +144,8 @@ DO n=1,i1num
 ENDDO
 
 ! Hour
-infile=sysid//'_'//systime//'_'//csat//'.hours'
+infile='hours.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.hours'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.hours'
 CALL rdasciidat(infile,luin)
 ALLOCATE(shr(i1num))
@@ -150,7 +154,8 @@ DO n=1,i1num
 ENDDO
 
 ! Minute
-infile=sysid//'_'//systime//'_'//csat//'.minutes'
+infile='minutes.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.minutes'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.minutes'
 CALL rdasciidat(infile,luin)
 ALLOCATE(smm(i1num))
@@ -159,7 +164,8 @@ DO n=1,i1num
 ENDDO
 
 ! Second
-infile=sysid//'_'//systime//'_'//csat//'.seconds'
+infile='seconds.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.seconds'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.seconds'
 CALL rdasciidat(infile,luin)
 ALLOCATE(sss(i1num))
@@ -168,7 +174,8 @@ DO n=1,i1num
 ENDDO
 
 ! Read latitude and longitude of satellite swath center
-infile=sysid//'_'//systime//'_'//csat//'.scanline_center_lat'
+infile='ScanLine_Center_Lat.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.scanline_center_lat'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.scanline_center_lat'
 CALL rdasciidat(infile,luin)
 ALLOCATE(sclat(i1num))
@@ -176,7 +183,8 @@ DO n=1,i1num
   sclat(n)=r1_flt(n)
 ENDDO
 
-infile=sysid//'_'//systime//'_'//csat//'.scanline_center_lon'
+infile='ScanLine_Center_Lon.txt'
+!infile=sysid//'_'//systime//'_'//csat//'.scanline_center_lon'
 !infile=satdir(1:nchar)//sysid//'_'//systime//'_'//csat//'.scanline_center_lon'
 CALL rdasciidat(infile,luin)
 ALLOCATE(sclon(i1num))
@@ -254,6 +262,8 @@ ENDIF
 510 FORMAT(A2,1X,I7,1X,I6.6,4(1X,F8.2))
 520 FORMAT(I6)
 CLOSE(UNIT=luin)
+
+CALL EXIT(0)
 
 END PROGRAM satcenter
 

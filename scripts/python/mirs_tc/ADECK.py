@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-ADECK.py - adeck tropical cyclone forcast (ATCF) class  
+ADECK.py - automated tropical cyclone forcast (ATCF) ADECK class  
 """
 
 # Stock modules
@@ -44,17 +44,18 @@ basins={
 
 class adeck(dataset):
 
-    def __init__(self,filename):
+    def __init__(self,filepath):
 
         self.regexp=regexp
         self.schema=schema
 
-        super(adeck,self).__init__(filename)
+        super(adeck,self).__init__(filepath)
 
         self.properties['stormNum']=int(self.properties['stormNum'])
         self.properties['year']=int(self.properties['year'])
 
         checkBasin(self.properties['basinId'],self.properties['filename'])
+        self.properties['jtwcId']="{}{}".format(self.properties['stormNum'],self.properties['basinId'][0].upper())
         
         if 'createDTG' in self.properties:
             self.properties['createDTG']=datetime.datetime.strptime(self.properties['createDTG'],"%Y%m%d%H%M")
@@ -63,20 +64,23 @@ class adeck(dataset):
             LOG.info("Filename creation time field doesn't exist, using file modification time")
             self.properties['createDTG']=datetime.fromtimestamp(os.path.getmtime(self.properties('filename')))
 
-def latestAdecks(adecks):
+''' Filter routine for adeck object lists '''
+def latestAdecks(config,metadata,dataname):
 
-    latestAdecks={}
-    for adeck in adecks: 
-
-        stormId=adeck.getProperty('stormId')
-        createDTG=adeck.getProperty('createDTG')
-        if stormId in latestAdecks:
-             if createDTG > latestAdecks[stormId].getProperty('createDTG'):
+    try: 
+        latestAdecks={}
+        for adeck in metadata[dataname]: 
+            stormId=adeck.get('stormId')
+            createDTG=adeck.get('createDTG')
+            if stormId in latestAdecks:
+                 if createDTG > latestAdecks[stormId].get('createDTG'):
+                    latestAdecks[stormId]=adeck
+            else:
                 latestAdecks[stormId]=adeck
-        else:
-            latestAdecks[stormId]=adeck
-
-    latestAdecks=latestAdecks.values()
+        latestAdecks=latestAdecks.values()
+    except:
+        msg="Problem filtering {} object list".format(dataname)
+        utils.error(LOG,msg,error_codes.EX_DATAERR)
 
     return(latestAdecks)
 

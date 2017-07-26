@@ -571,4 +571,6 @@ PROGRAM ShortTermTrack_mirs
 
   END IF
 
+  CALL EXIT(0)
+
 END PROGRAM ShortTermTrack_mirs

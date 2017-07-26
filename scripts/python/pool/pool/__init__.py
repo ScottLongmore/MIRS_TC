@@ -1,4 +1,4 @@
-__version__ = "1.2.1"
+__version__ = "1.6.0"
 
 import plugin_loader
 import config_sections

@@ -12,10 +12,12 @@ import traceback
 import datetime
 import collections
 import operator
+import shutil
 import json
 import jsonschema
 import numpy
 import pandas as pd
+import math
 
 
 # Local modules
@@ -26,13 +28,13 @@ import utils
 LOG = logging.getLogger(__name__)
 
 DTFormat="%Y%m%d%H%M%S%f"
-synHourDeltas={
-   0:{"forward":0,"backward":6},
-   1:{"forward":1,"backward":6},
-   2:{"forward":2,"backward":6},
-   3:{"forward":3,"backward":6},
-   4:{"forward":4,"backward":6},
-   5:{"forward":4,"backward":6}
+mirsTimeQueryOffsets={
+   0:{"after":0,"before":21600},
+   1:{"after":3600,"before":21600},
+   2:{"after":7200,"before":21600},
+   3:{"after":10800,"before":21600},
+   4:{"after":14400,"before":21600},
+   5:{"after":18000,"before":21600}
 }
 
 basins={
@@ -63,6 +65,10 @@ gfsGribFields={
     "p1070":":PRMSL:mean sea level:"
 }
 
+erad=6371.0 # Radius of Earth
+dtr=math.pi/180.0 # Degrees to radians conversion
+
+
 
 def last_synoptic_datetime(dt):
 
@@ -90,29 +96,70 @@ def next_synoptic_datetime(dt):
 
     return(dt.replace(hour=synHour,minute=0,second=0,microsecond=0))
 
-def datetimes(dts):
+def datetimes(jcsDTS,jceDTS):
 
     try:
-        dtg=datetime.datetime.strptime(dts,DTFormat)
+        jcsDTG=datetime.datetime.strptime(jcsDTS,DTFormat)
+        jceDTG=datetime.datetime.strptime(jceDTS,DTFormat)
     except:
-        msg="Time: {} invalid format (YYYYMMDDHHMMSSS)".format(dts)
+        msg="Time: {} invalid format (YYYYMMDDHHMMSSS)".format(jcsDTS)
         utils.error(LOG,msg,error_codes.EX_IOERR)
 
     try:
-         initDTG=dtg.replace(minute=0,second=0,microsecond=0) # Last Hour floor e.g. 5:05:23 -> 5:00:00
-         lastSynpDTG=last_synoptic_datetime(initDTG) 
-         synpDelta=int((initDTG-lastSynpDTG).total_seconds() // 3600)
-         datetimes={
-             "initDTG":initDTG,
-             "synpDTG":lastSynpDTG,
-             "MIRS_FRWD_HOURS":synHourDeltas[synpDelta]['forward'],
-             "MIRS_BKWD_HOURS":synHourDeltas[synpDelta]['backward']
-          }
+        initDTG=jceDTG.replace(minute=0,second=0,microsecond=0) # Last Hour floor e.g. 5:05:23 -> 5:00:00
+        lastSynpDTG=last_synoptic_datetime(initDTG) # 0,6,12,18 
+        synpDelta=int((initDTG-lastSynpDTG).total_seconds() // 3600) # Synoptic Hour Delta
+        datetimes={
+            "jcsDTG":jcsDTG,
+            "jceDTG":jceDTG,
+            "initDTG":initDTG,
+            "synpDTG":lastSynpDTG,
+            "mirsSecsAfter":mirsTimeQueryOffsets[synpDelta]['after'],
+            "mirsSecsBefore":mirsTimeQueryOffsets[synpDelta]['before']
+        }
     except:
         msg="Problem determining datetimes"
         utils.error(LOG,msg,error_codes.EX_IOERR)
 
     return(datetimes)
+
+def datalinks(metadata,datasetKeys):
+
+    # Fill datalinks with references to metadata objects by dataname and link value
+    dataLinks={}
+    for dataname in datasetKeys:
+        datasetKey=datasetKeys[dataname] #Value containing object property key that links metadata (e.g. ATMS 'startDT')
+        for dataset in metadata[dataname]:
+            linkID=dataset.get(datasetKey) #Unique value (linkID) common between dataset files such as 'startDT' e.g. 20170601120000
+            # print("dataname: {} datasetKey: {} linkID: {} ".format(dataname,datasetKey,linkID))
+            if linkID not in dataLinks: 
+               dataLinks[linkID]={}
+            dataLinks[linkID][dataname]=dataset
+            #print("linkID: {} dataname: {} filename: {}".format(linkID,dataname,dataLinks[linkID][dataname].get("filename")))
+
+    #for linkID in dataLinks:
+    #    print dataLinks[linkID].keys()
+    #    for dataname in dataLinks[linkID]:
+    #         print("linkID: {} dataname: {} filename: {}".format(linkID,dataname,dataLinks[linkID][dataname].get("filename")))
+
+    # Keep only datalinks that have references to all datasets
+    deleteLinks=[]
+    for linkID in dataLinks:
+        for dataname in datasetKeys: 
+            if dataname not in dataLinks[linkID]:
+                 deleteLinks.append(linkID)
+
+#        dataset=dataLinks[linkID]
+#        if not all(dataname in dataset for dataname in datasetKeys):
+#            deleteLinks.append(linkID)
+
+    for linkID in deleteLinks:
+        #print("Deleting: {}".format(linkID))
+        dataLinks.pop(linkID,None)
+
+    return(dataLinks)
+
+
 
 def grib2pack(gribDate,gribTime,gribFhour,gribFile,wgribExe,bin2packExe,logDir):
 
@@ -130,6 +177,7 @@ def grib2pack(gribDate,gribTime,gribFhour,gribFile,wgribExe,bin2packExe,logDir):
         commandID=field
         stdoutFile=os.path.join(logDir,"wgrib_{}_{}.log".format(gribString,field))
         stderrFile=os.path.join(logDir,"wgrib_{}_{}.err".format(gribString,field))
+        LOG.info("Running wgrib2")
         LOG.debug("Executing: {}".format(" ".join(commandList+commandArgs)))
         if not utils.execute(commandList,commandArgs,commandID,logDir,stdoutFile=stdoutFile,stderrFile=stderrFile):
              LOG.warning("Problem executing {}".format(" ".join(commandList+commandArgs)))
@@ -144,6 +192,7 @@ def grib2pack(gribDate,gribTime,gribFhour,gribFile,wgribExe,bin2packExe,logDir):
     commandID="bin2pack"
     stdoutFile=os.path.join(logDir,"bin2pack_{}.log".format(gribString))
     stderrFile=os.path.join(logDir,"bin2pack_{}.err".format(gribString))
+    LOG.info("Running bin2pack")
     LOG.info("Executing: {}".format(" ".join(commandList+commandArgs)))
     if not utils.execute(commandList,commandArgs,commandID,logDir,stdoutFile=stdoutFile,stderrFile=stderrFile):
          LOG.warning("Problem executing {}".format(" ".join(commandList+commandArgs)))
@@ -179,10 +228,120 @@ def getInputAnalysisVars(filepath):
 
      rows=getInputVars(filepath,'DELTA_T',0)
 
-     analDTG=rows.keys()[0] # Assume only one
-     analysis={}
-     for col in rows[analDTG]:
-        analysis[col]=rows[analDTG][col]
-     analysis['DTG']=analDTG
+     varDTG=rows.keys()[0] # Assume only one
+     vars={}
+     for col in rows[varDTG]:
+        vars[col]=rows[varDTG][col]
+     vars['DTG']=varDTG
+
+     if vars['LONGITUDE'] > 180: 
+        vars['LONGITUDE']=(360-vars['LONGITUDE'])*-1 
  
-     return(analysis)
+     return(vars)
+
+def getLinkFilenames(dataLink, inputDatasets, inputDatasetKey, inputFilenames, outputDataname):
+
+    # remove paths from filenames
+    inputFiles=[]
+    for inputFilename in inputFilenames:
+        inputFiles.append(os.path.basename(inputFilename))
+
+    # Get linkID for input filenames
+    outputFilenames=[]
+    for dataset in inputDatasets:
+        filename=dataset.get('filename')
+        if filename in inputFiles:
+           linkID=dataset.get(inputDatasetKey)
+           try:
+               outFilename=os.path.join(dataLink[linkID][outputDataname].get('path'),dataLink[linkID][outputDataname].get('filename'))
+               outputFilenames.append(outFilename)
+           except:
+               LOG.warning("No matching {} filename: {}".format(outputDataname,filename))
+
+    return(outputFilenames)
+
+def extractTarFiles(tarCommand,tarFile,stringID,logDir):
+
+    # Extract files from tar file
+    LOG.info("Extracting {} data files from archive file: {}".format(stringID,tarFile))
+    commandList=[tarCommand]
+    commandArgs=[]
+    commandArgs.extend(["--warning=no-timestamp","--strip-components=1","-xvf",tarFile])
+    commandID="tar_{}".format(stringID)
+    stdoutFile=os.path.join(logDir,"{}.stdout".format(commandID))
+    stderrFile=os.path.join(logDir,"{}.stderr".format(commandID))
+    LOG.debug("Executing: {}".format(" ".join(commandList+commandArgs)))
+    if not utils.execute(commandList,commandArgs,commandID,logDir,stdoutFile=stdoutFile,stderrFile=stderrFile):
+         LOG.warning("Problem executing {}".format(" ".join(commandList+commandArgs)))
+         LOG.warning("See sub-process log file: {}".format(stdoutFile))
+         LOG.warning("See sub-process error file: {}".format(stderrFile))
+         return(False)
+ 
+    return(True)
+
+   
+def readPoolTextFile(filename): 
+
+    try:
+        fh=open(filename,"r")
+        nDims=fh.readline().rstrip().split(":")[1]
+        dimsString=fh.readline().rstrip().split(":")[1]
+        dims=map(int,dimsString.split(","))
+        dimType=fh.readline().rstrip().split(":")[1]
+        nRecords=reduce(operator.mul, dims, 1)
+         
+        records=[]
+        for line in fh:
+            records.append(line.rstrip().split(','))
+        records=zip(*records) # flip dimenstions
+    except:
+        LOG.warning("Problem reading {}".format(filename))
+        
+      
+    return(records)
+
+def createTimeFieldFiles(timeFilename):
+
+    records=readPoolTextFile(timeFilename) # index:records[0], epoch seconds record[1]
+   
+    timeVars={
+        "years":"%Y",
+        "months":"%m",
+        "days":"%d",
+        "hours":"%H",
+        "minutes":"%M",
+        "seconds":"%S"
+    }
+    timeFiles={}
+    timeFHs={}
+    for timeVar in timeVars: 
+       timeFiles[timeVar]="{}.txt".format(timeVar)
+       timeFHs[timeVar]=open(timeFiles[timeVar],"w")
+       timeFHs[timeVar].write("rank:001\n")
+       timeFHs[timeVar].write("dimensions:{:09d}\n".format(len(records[1])))
+       timeFHs[timeVar].write("type:int\n")
+       
+
+    for rn in xrange(0,len(records[-1])):
+        DTG=datetime.datetime.fromtimestamp(float(records[1][rn]))
+        for timeVar in timeVars:
+            timeFHs[timeVar].write("{},{:09d}\n".format(records[0][rn],int(DTG.strftime(timeVars[timeVar]))))
+
+    for timeVar in timeVars: 
+       timeFHs[timeVar].close()
+
+    return True 
+    
+
+def createCOORTIMES(coordFile,timeFile,satIdent,instrIdent,coortimeFile):
+   
+    try:
+        with open(coortimeFile,'wb') as wfd:
+            for f in [coordFile,timeFile]:
+                with open(f,'rb') as fd:
+                   shutil.copyfileobj(fd, wfd)
+            wfd.write("{}\n{}\n".format(satIdent,instrIdent))
+    except:
+        return False
+ 
+    return True

@@ -26,7 +26,7 @@ META_INFO_FILENAME = "meta_info.json"
 DEFAULT_BACKUP_DAYS_TO_KEEP = 7
 DEFAULT_BACKUP_FREQ_SECONDS = 3600*24
 BACKUP_DATE_FORMAT = "%Y-%m-%d-%H-%M-%S"
-BACKUP_FILENAME_RE_STRING = "\@DIR_NAME_(?P<date>\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}).zip"
+BACKUP_FILENAME_RE_STRING = r"@DIR_NAME_(?P<date>\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}).tar.gz"
 
 _cached_path_existence_lookups = {}
 
@@ -290,8 +290,8 @@ class SparseAsciiGridDatabase(dp.Database):
             date_suffix = datetime.now().strftime(BACKUP_DATE_FORMAT)
             database_dir, database_root = self._get_database_dir_and_root()
             backup_filename = os.path.join(database_root, database_dir+"_"+date_suffix)
-            LOGGER.info("Making backup of %s, in zip file: %s", self.database_dir, backup_filename)
-            shutil.make_archive(backup_filename, "zip", self.database_dir)
+            LOGGER.info("Making backup of %s, in tar.gz file: %s", self.database_dir, backup_filename)
+            shutil.make_archive(backup_filename, "gztar", self.database_dir)
 
         LOGGER.info("Finished backup.")
 
@@ -474,7 +474,7 @@ def _get_time_index_scale_hierarchy_from_config(config):
 def create_database(config):
     LOGGER.info("Starting create_database.")
     database_dir = config.get(cfg.DATABASE_SEC, "location").strip()
-    LOGGER.debug("Creating database at location: {}".format(database_dir))
+    LOGGER.info("Creating database at location: {}".format(database_dir))
 
     LOGGER.debug("Checking to see if database already exists.")
     if os.path.isdir(database_dir):
