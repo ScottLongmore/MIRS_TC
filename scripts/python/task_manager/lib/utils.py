@@ -13,12 +13,14 @@ import logging
 import types
 import struct
 import resource
+import pprint
 
 # Local modules
 import error_codes
 import dirRE
 
 LOG = logging.getLogger(__name__)
+pp=pprint.PrettyPrinter(indent=4)
 
 DTGFRMTS = collections.OrderedDict(
          {
@@ -129,6 +131,8 @@ def DTGrangeToStrings(startDTG,endDTG,formats):
             for i in xrange(int(startStr),int(endStr)+1):
                 string=str(i).zfill(len(startStr))
                 DTGstrs[key].append(string)
+            #pp.pprint( DTGstrs[key])
+
 
     except:
         msg="DTGrangeToStrings unknown problem"
@@ -247,7 +251,7 @@ def getProcesses(commandRE):
     """
 
     procAttrs=['username', 'pid', 'cmdline', 'create_time', 'cpu_percent', 'terminal', 'ppid', 'cwd', 'nice', 'status', \
-               'cpu_times', 'open_files', 'name', 'num_threads', 'exe', 'uids', 'gids', 'memory_percent','parent','children']
+               'cpu_times', 'open_files', 'name', 'num_threads', 'exe', 'uids', 'gids', 'memory_percent']
     processes={}
     for proc in psutil.process_iter():
         try:

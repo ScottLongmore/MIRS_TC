@@ -96,9 +96,9 @@ class fileAction(object):
                #print "\t\tNEWRE: {}".format(input['re'])
             
             # Parse and retrieve file search directories 
-            #print "RDIRS: {}".format(input['dirs'])
+            print "RDIRS: {}".format(input['dirs'])
             input['dirs']=parseDirEntries(input['dirs']) 
-            #print "NEWRDIRS: {}".format(input['dirs'])
+            print "NEWRDIRS: {}".format(input['dirs'])
     
             input['files']=collections.OrderedDict()
             files=input['files']

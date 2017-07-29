@@ -452,11 +452,11 @@ class SparseAsciiGridDatabase(dp.Database):
         self.close(config)
 
     def close(self, config):
-        LOGGER.info("Closing all open grid cells")
+        LOGGER.debug("Closing all open grid cells")
         for cell in self.grid_cells.values():
             cell.close()
         self.grid_cells = {}
-        LOGGER.info("Finished closing all open grid cells")
+        LOGGER.debug("Finished closing all open grid cells")
 
 def _get_time_index_scale_hierarchy_from_config(config):
     if not config.has_option(cfg.DATABASE_SEC, "time_index_scale_hierarchy"):

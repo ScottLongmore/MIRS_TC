@@ -68,7 +68,11 @@
       "pool":{
         "config":{"$ref":"#/files/pool/mirs_atms_img"},
         "dataset":"mirs_atms_img",
-        "datasets":["mirs_atms_snd"]
+        "datasets":["mirs_atms_snd"],
+        "query":{
+          "width_lon":30,
+          "height_lat":30
+        }
       }
     }
   },
@@ -84,9 +88,6 @@
       "outputs":{
         "coordFile":"COORDINATES"
       }
-    },
-    "pool":{
-      "module":"pool"
     },
     "satcenter":{
       "exe":"bin/satcenter.x",
@@ -152,9 +153,7 @@
   "products":{
     "ident":"TC",
     "version":"v2r0",
-    "DTFormat":"%Y%m%d%H%M%S0"
-  },
-  "outputs":{
+    "DTFormat":"%Y%m%d%H%M%S0",
     "outputFile":"MIRS_TC.PSF"
   },
   "exts":{

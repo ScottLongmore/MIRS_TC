@@ -1,0 +1,70 @@
+{
+  "name":"MIRS_TC",
+  "workDirRoot":"/mnt/ssd-data2/MIRS_TC/runs/ops/rt",
+  "logDir":"/mnt/ssd-data2/MIRS_TC/runs/ops/logs",
+  "completeTaskFile":"/mnt/ssd-data2/MIRS_TC/runs/ops/etc/MIRS_TC_rt_complete.json",
+  "primeTasksKey":"DTS",
+  "sortReverseOption":true,
+  "plugin": {
+    "module":"plgnMIRS_TC",
+    "purge":"PURGE",
+    "tasks":"TASKS",
+    "work":"WORK",
+    "NDE":{
+      "PCF":"MIRS_TC.PCF",
+      "PCFattrs":{
+        "working_directory":"/mnt/ssd-data2/MIRS_TC/runs/ops/rt",
+        "job_coverage_start":0,
+        "job_coverage_end":0,
+        "algorithmLogMessageContext":"MIRS_TC",
+        "algorithmLogMessageError":"ERROR:",
+        "algorithmLogMessageWarn":"WARNING:",
+        "SYS_DIR":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC",
+        "PYTHON":"/home/slongmore/local/anaconda2/bin/python",
+        "WGRIB":"/home/slongmore/local/bin/wgrib2",
+        "TAR":"/bin/tar"
+      },
+      "LOG":"MIRS_TC.LOG",
+      "PSF":"MIRS_TC.PSF",
+      "logDir":"log",
+      "outputDir":"output"
+    },
+    "MIRS_TC":{
+      "exe":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC/scripts/python/mirs_tc/mirs_tc.py",
+      "configs":{
+        "mirs_tc":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC/scripts/python/mirs_tc/MIRS_TC.json"
+      }
+    }
+  },
+  "meta": {
+    "bkwdDelta": 43200,
+    "DTGfrmts": {
+      "Y":"%Y",
+      "m":"%m",
+      "d":"%d",
+      "H":"%H"
+    }
+  },
+  "inputs": {
+    "adeck": {
+      "dirs":["/mnt/ssd-data1/ATCF/DOD"],
+      "re":"^a(?P<stormId>(?P<basinId>\\w{2})(?P<stormNum>\\d{2})(?P<year>%Y))\\.dat",
+      "PCFkey":"adeck_input"
+    },
+    "gfs":{
+      "dirs":["/mnt/ssd-data1/GFS_grib2"],
+      "re":"^gfs\\.(?P<runDTG>\\d{10})\\.pgrb2\\.1p00\\.f(?P<fhour>\\d{3})$",
+      "PCFkey":"gfs_input"
+    },
+    "mirs_atms_img":{
+      "dirs":["/mnt/jtnas5/Incoming_Data/MIRS_Archive/ATMS-MIRS/d%Y%m%d_snpp-atm30s-rtnde/h%Y%m%d%H"],
+      "re":"^NPR-MIRS-(?P<type>IMG)_(?P<version>\\w+)_(?P<satellite>\\w+)_s(?P<startDT>\\d{14,15})_e(?P<endDT>\\d{14,15})_c(?P<createDT>\\d{14,15})\\.nc$",
+      "PCFkey":"mirs_img_input"
+    },
+    "mirs_atms_snd":{
+      "dirs":["/mnt/jtnas5/Incoming_Data/MIRS_Archive/ATMS-MIRS/d%Y%m%d_snpp-atm30s-rtnde/h%Y%m%d%H"],
+      "re":"^NPR-MIRS-(?P<type>SND)_(?P<version>\\w+)_(?P<satellite>\\w+)_s(?P<startDT>\\d{14,15})_e(?P<endDT>\\d{14,15})_c(?P<createDT>\\d{14,15})\\.nc$",
+      "PCFkey":"mirs_snd_input"
+    }
+  }
+}

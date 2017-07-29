@@ -35,7 +35,7 @@ class dirRE(object):
        dirPattern="^\^(.+)\$$"
   
        dirTier=dirTiers[tier]
-       #   print "{} : {} ".format(dirTier,tier)
+       #print "[{}]: {} ".format(tier, dirTier)
        dirMatch=re.match(dirPattern,dirTier)
        subdirs=[]
 
@@ -57,16 +57,19 @@ class dirRE(object):
               LOG.warning("Dir RE: {} not a sub-directory, or directory reg-expression")
               return(1)
     
-       for subdir in subdirs:
-           if tier < len(dirTiers)-1:
-                dirTree[subdir]={}
-                subdirTree=dirTree[subdir];
-                cwdir=os.path.join(dir,subdir)
-                self._createDirTree(dirTiers,tier+1,cwdir,subdirTree)
-                #print "{} {} {}".format(tier,subdir,type(dirTree[subdir]))
-           else:
-                dirTree[subdir]=subdir
-                #print "{} {} {} last".format(tier,subdir,type(dirTree[subdir]))
+       if len(subdirs)>0: 
+           for subdir in subdirs:
+               if tier < (len(dirTiers)-1):
+                   dirTree[subdir]={}
+                   subdirTree=dirTree[subdir];
+                   cwdir=os.path.join(dir,subdir)
+                   self._createDirTree(dirTiers,tier+1,cwdir,subdirTree)
+                   #print "{} {} {}".format(tier,subdir,type(dirTree[subdir]))
+               else:
+                   dirTree[subdir]=subdir
+                   #print "{} {} {} last".format(tier,subdir,type(dirTree[subdir]))
+       else:
+          LOG.warning("No sub-directories, non matching subdirectory RE?")
 
        return
 

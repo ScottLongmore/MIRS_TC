@@ -17,11 +17,22 @@ import json
 import jsonschema
 import importlib
 import logging
+import pprint
+import traceback
 
-# Log
-import setup_logging
+
+# Set local module paths
+try:
+    exePath=os.path.dirname(os.path.abspath(__file__))
+    parentPath,childDir=os.path.split(exePath)
+    sys.path.insert(1,os.path.join(parentPath,"..","lib"))
+    sys.path.insert(2,os.path.join(parentPath,"plugins"))
+except:
+   print "Unable to load local library paths"
+   sys.exit(1)
 
 # Local modules
+import setup_logging
 import error_codes
 import utils
 import libTask
@@ -33,25 +44,32 @@ __license__ = 'BSD 3-clause'
 __maintainer__ = 'Scott Longmore'
 __email__ = 'scott.longmore@colostate.edu'
 
-
-# change to the current working directory in cron
-executable_path = os.path.abspath(__file__)
-current_working_directory = os.path.dirname(executable_path)
-os.chdir(current_working_directory)
-
-# setup logging
-logging_setup = "runTasks"
-setup_logging.setup_logging(logging_setup)
-LOG = logging.getLogger('runTasks')  # create the logger for this file
-
 # Variables
 runDTG = datetime.datetime.utcnow()
 ISODTSFormat = "%Y%m%dT%H%M%S"
 schema_task = json.load(open('schema_task.json', 'r'), object_pairs_hook=collections.OrderedDict)
+pp=pprint.PrettyPrinter(indent=4)
+
+# Read Command Line Arguments
+options = argparse.ArgumentParser(prog='runTasks')
+options.add_argument('-c', '--config', dest='config', help='Configuration File')
+options.add_argument('-l', '--log', dest='log', help='Log File')
+try:
+    args = options.parse_args()
+    config_filename = args.config
+    logFile = args.log
+except:
+    print('Syntax: python runTasks.py -c <config.json> -l <log file>')
+    sys.exit(1)
+
+# setup logging
+LOG = logging.getLogger('runTasks')  # create the logger for this file
+setup_logging.setup_logging("runTasks",logFile)
 
 # Determine if process is running, or in zombie state
 cpid = os.getpid()
-commandRE = "^{}$".format(" +".join([sys.executable] + sys.argv))
+#commandRE = "^{}$".format(" +".join([sys.executable] + sys.argv))
+commandRE = "^{}.*{}.*$".format(sys.executable,config_filename)
 procs = utils.getProcesses(commandRE)
 if cpid in procs:
     del procs[cpid]
@@ -63,18 +81,6 @@ if len(procs) > 0:
         else:
             LOG.info("Process {} ({}) is in zombie state, terminating".format(__file__, pid))
             procs[pid].kill()
-
-# Read Command Line Arguments
-options = argparse.ArgumentParser(prog='runTasks')
-options.add_argument('-c', '--config', dest='config', help='Configuration File')
-
-try:
-    args = options.parse_args()
-    config_filename = args.config
-
-except:
-    msg = 'Syntax: python runTasks.py -c <config.json>'
-    utils.error(LOG, msg, error_codes.EX_USAGE)
 
 # Read and Validate Configuration File
 try:
@@ -163,6 +169,7 @@ while tasks:
     try:
         args = [workConfig, task]
         status = getattr(module, workMethod)(*args)
+        
         if status:
             LOG.info("Task: {} completed".format(libTask.print_tasks_keys_values([task], primeTasksKey)))
             executedTasks.append(task)
@@ -172,7 +179,7 @@ while tasks:
 
     except:
         LOG.warning("Unable to complete task, dequeing task and continuing to next task")
-        # traceback.print_exc(file=sys.stdout)
+        traceback.print_exc(file=sys.stdout)
         incompleteTasks.append(task)
 
     # Determine if any new tasks are available

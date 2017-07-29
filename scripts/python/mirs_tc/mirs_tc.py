@@ -196,15 +196,18 @@ for satname in config['satellites']:
     pool['cfgParser']=pool_api.get_config_cascade([pool['config']])
     pool['cfgParser'].set("file_gather","gather_dir",dataDir) 
     pool['cfgParser'].set("database","location",poolDataDir)
-    pool['cfgParser'].set("query","time",config['datetimes']['initDTG'].strftime("%Y-%m-%d-%H-%M-%S"))
 
     if os.path.isdir(poolDataDir):
         LOG.info("Satellite/instrument/dataset pool: {}/{}/{}, already exists, skipping".format(satname,sat['instrument'],pool['dataset']))
     else:
-        LOG.info("Creating satellite/instrument/dataset pool: {}/{}/{}".format(satname,sat['instrument'],pool['dataset']))
-        pool_api.create(pool['cfgParser'])
-        LOG.info("Running pool_api.update")
-        pool_api.update(pool['cfgParser'])
+        try:
+            LOG.info("Creating satellite/instrument/dataset pool: {}/{}/{}".format(satname,sat['instrument'],pool['dataset']))
+            pool_api.create(pool['cfgParser'])
+            LOG.info("Running pool_api.update")
+            pool_api.update(pool['cfgParser'])
+        except:
+            msg="Problem creating/updating pool for {}/{}/{}".format(satname,sat['instrument'],pool['dataset'])
+            utils.error(LOG,msg,error_codes.EX_IOERR)
 
 # Start main tropical cyclone (adeck) processing loop
 #
@@ -308,6 +311,14 @@ for adeck in adecks:
 
         queryFile=os.path.join(satDir,"{}_query.txt".format(pool['dataset']))
         tarFile=os.path.join(satDir,"{}.tar".format(pool['dataset']))
+   
+        # Remove previous query sections
+        if pool['cfgParser'].has_section("query"):
+            pool['cfgParser'].remove_section('query')
+
+        pool['cfgParser'].add_section("query")
+        pool['cfgParser'].set("query","height_lat",pool["query"]["height_lat"])
+        pool['cfgParser'].set("query","width_lon",pool["query"]["width_lon"])
         pool['cfgParser'].set("query","center_lat",stormVars['LATITUDE'])
         pool['cfgParser'].set("query","center_lon",stormVars['LONGITUDE'])
         pool['cfgParser'].set("query","time",stormVars['DTG'].strftime("%Y-%m-%d-%H-%M-%S"))
@@ -318,13 +329,17 @@ for adeck in adecks:
         pool['cfgParser'].set("query","tar_output_filename",tarFile)
 
         poolFiles[pool['dataset']], query_results = pool_api.query(pool['cfgParser'])
+        
+        # Check for empty query results
+        if query_results[config['datasets'][pool['dataset']]['variables'][0]].shape[0] <=0:
+            LOG.info("No intersecting MIRS files for TC bounding box domain, skipping to next satellite")
+            continue 
 
         # Extract files from pool tar file
         if not MIRS_TC.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,pool['dataset']),logDir):
-            LOG.warning("Problem extracting files from tar file: {}".format(tarFile))
-            next
+            LOG.warning("Problem extracting files from tar file: {}, skipping to next satellite".format(tarFile))
+            continue 
 
-        outprefix="{}_{}_{}".format(stormId,stormVars['DTG'].strftime("%Y%m%d%H"),satId)
         # Verify and rename output variable text files
         varFiles={}
         for varname in config['datasets'][pool['dataset']]['variables']:
@@ -333,7 +348,7 @@ for adeck in adecks:
             if not os.path.isfile(varFilename):
                 LOG.warning("Query failed for dataset: {}, variable file: {} does not exist".format(pool['dataset'],variableFile))
                 skipFlag=True
-                next 
+                break 
 
         # Check for error in sub-loop
         if skipFlag:
@@ -356,7 +371,7 @@ for adeck in adecks:
             if len(poolFiles[poolname]) != len(poolFiles[pool['dataset']]):
 	       LOG.warning("Number of files doesn't match between {} and {} queries".format(pool['dataset'],poolname))
                skipFlag=True
-               next
+               break 
 
             # Query linked data files
 	    LOG.info("Querying satellite/instrument/dataset linked pool: {}/{}/{} ".format(satname,instr,poolname))
@@ -368,22 +383,36 @@ for adeck in adecks:
             pool['cfgParser'].set("query","tar_output_filename",tarFile)
             query_results = pool_api.query_gather_samples(pool['cfgParser'], poolFiles[poolname])
 
+            # Check for empty query results
+            if query_results[config['datasets'][poolname]['variables'][0]].shape[0] <=0:
+                LOG.info("No intersecting MIRS files for TC bounding box domain, skipping to next satellite")
+                skipFlag=True
+                break 
+
             # Extract files from pool tar file
             if not MIRS_TC.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,poolname),logDir):
                 LOG.warning("Problem extracting files from tar file: {}, skipping to next satellite".format(tarFile))
-                next
+                skipFlag=True
+                break 
  
             # Verify output variable text files
             for varname in config['datasets'][poolname]['variables']+config['datasets'][poolname]['shared_variables']:
                 varFiles[varname]="{}.{}".format(varname,config['exts']['txt'])
                 varFilename=os.path.join(satDir,varFiles[varname])
                 if not os.path.isfile(varFilename):
-                    LOG.warning("Query failed for dataset: {}, variable file: {} does not exist".format(poolname,variableFile))
+                    LOG.warning("Query failed for dataset: {}, variable file: {} does not exist".format(poolname,varFilename))
                     skipFlag=True
-                    next 
-        # Check for error in sub-loop 
+                    break 
+
+            # Check for error in sub-loop 
+            if skipFlag:
+	        LOG.warning("Problem querying pool: {}, skipping to next satellite".format(poolname))
+                break 
+
+
+        # Check for error in linked dataset query loop 
         if skipFlag:
-	    LOG.warning("Problem querying pool: {}, skipping to next satellite".format(poolname))
+	    LOG.warning("Problem in data linked query loop, skipping to next satellite".format(poolname))
             continue
 
         # Running satcenter - determine if TC center is within range for satellite scanline center 
@@ -488,7 +517,7 @@ for adeck in adecks:
             if not os.path.isfile(oparetFilename):
                 LOG.warning("oparet file {} does not exist".format(oparetFile))
                 skipFlag=True
-                next 
+                break 
 
         # Check for error in sub-loop 
         if skipFlag:
@@ -502,18 +531,21 @@ for adeck in adecks:
             LOG.warning("oparet log file {} does not exist, skipping to next satellite".format(oparetFile))
             continue
 
-        # Product prefix/suffixes 
+        # Open PSF, create product prefix/suffixes 
+        psfFH=open(config['products']['outputFile'],'a')
         productPfx="{}-{}".format(config['products']['ident'],stormId)
         productSfx="{}_{}_s{}_e{}_c{}".format(config['products']['version'],sat['productId'],
                                               config['datetimes']['jcsDTG'].strftime(config['products']['DTFormat']),
                                               config['datetimes']['jceDTG'].strftime(config['products']['DTFormat']),
                                               datetime.datetime.now().strftime(config['products']['DTFormat']))
 
-        # Link AFX/FIX products to output directory
+        # Link AFX/FIX products to output directory, add to PSF file
         oparetAFXFile="{}_{}.AFX".format(productPfx,productSfx)
         oparetFixFile="{}_{}_{}_FIX".format(productPfx,productSfx,adeck.get('jtwcId'))
         utils.linkFile(satDir,oparetFiles['AFX'],outputDir,oparetAFXFile)
+        psfFH.write("{}\n".format(oparetAFXFile))
         utils.linkFile(satDir,oparetFiles['AFX'],outputDir,oparetFixFile)
+        psfFH.write("{}\n".format(oparetFixFile))
 
         # Generate netCDF files for XYA/RZA files 
         #
@@ -536,6 +568,7 @@ for adeck in adecks:
             convertParamsFile="{}_params.json".format(opext)
             with open(convertParamsFile,'w') as fh:
                json.dump(convertParams, fh)
+            fh.close()
           
             # Run convert2netCDF.py 
             convert=config['programs']['convert2NetCDF'] 
@@ -555,15 +588,16 @@ for adeck in adecks:
                 LOG.warning("See sub-process error file: {}".format(stderrFile))
                 LOG.warning("{} exited with status: {}, skipping to next satellite".format(convert['exe'],status))
                 skipFlag=True
-                next
+                break 
     
             # Check nc files
             if os.path.isfile(ncFile):
                 utils.linkFile(satDir,ncFile,outputDir)
+                psfFH.write("{}\n".format(ncFile))
             else:
                 LOG.warning("{} does not exist, skipping to next satellite".format(ncFile))
                 skipFlag=True
-                next
+                break 
 
         # Check for error in sub-loop 
         if skipFlag:
@@ -605,9 +639,12 @@ for adeck in adecks:
             for plotFile in plotFiles:
                 imageProductFile="{}-{}-{}_{}.{}".format(productPfx,plotFiles[plotFile]['var'],plotFiles[plotFile]['level'],productSfx,plotFiles[plotFile]['ext'])
                 utils.linkFile(satDir,plotFile,outputDir,imageProductFile)
+                psfFH.write("{}\n".format(imageProductFile))
         else:
             LOG.warning("No plot files found, continuing to next satellite".format(status))
             continue
+
+        psfFH.close()
 
         # End Satellite Loop
         LOG.info("Completed Processing satellite/instrument: {}/{}".format(satname,instr))

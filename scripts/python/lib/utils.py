@@ -17,6 +17,8 @@ import types
 import struct
 import resource
 import subprocess
+import string
+import random
 
 # Local modules
 import error_codes
@@ -364,7 +366,7 @@ def getProcesses(commandRE):
     processes : dict
     """
     procAttrs=['username', 'pid', 'cmdline', 'create_time', 'cpu_percent', 'terminal', 'ppid', 'cwd', 'nice', 'status', \
-               'cpu_times', 'open_files', 'name', 'num_threads', 'exe', 'uids', 'gids', 'memory_percent','parent','children']
+               'cpu_times', 'open_files', 'name', 'num_threads', 'exe', 'uids', 'gids', 'memory_percent']
     processes={}
     for proc in psutil.process_iter():
         try:
@@ -489,7 +491,7 @@ def execute(commandList,commandArgs,commandID,logDir,stdoutFile='',stderrFile=''
 
 def workDir(workPath):
     """
-    workDir - creates working directory 
+    workDir - creates directory 
 
     Returns
     -------
@@ -497,13 +499,13 @@ def workDir(workPath):
     """
 
     if os.path.exists(workPath):
-        LOG.info('Working directory: {} exists'.format(workPath))
+        LOG.info('Directory: {} exists'.format(workPath))
     else:
-        LOG.info('Creating working directory: {}'.format(workPath))
+        LOG.info('Creating directory: {}'.format(workPath))
         try:
             os.makedirs(workPath)
         except:
-            msg = "Unable to create work dir {}".format(workPath)
+            msg = "Unable to create dir {}".format(workPath)
             error(LOG, msg, error_codes.EX_IOERR)
 
     return True
@@ -566,7 +568,10 @@ def linkFile(sourceDir,filename,destDir,newFilename=None):
             destFile=os.path.join(destDir,filename)
         else:
             destFile=os.path.join(destDir,newFilename)
-        os.symlink(sourceFile,destFile)
+        if os.path.islink(destFile):
+            LOG.info("Link {} already exists".format(destFile))
+        else:
+            os.symlink(sourceFile,destFile)
     except:
         msg="Unable to link file: {} to {}".format(sourceFile,destFile)
         error(LOG,msg,error_codes.EX_CONFIG)
@@ -580,7 +585,6 @@ def regexpFiles(regexp,Dir):
     for filename in filenames:
        m=re.match(regexp,filename)
        if os.path.isfile(filename) and m:
-          print("match file: {}".format(filename))
           fields=m.groupdict()
           matchFiles[filename]=fields
 
@@ -678,4 +682,5 @@ def prependAbsPath(args):
         msg="{} is not absolute or {} is not relative path".format(absPath,subPath)
         utils.error(LOG,msg,error_codes.EX_DATAERR)
 
-
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
