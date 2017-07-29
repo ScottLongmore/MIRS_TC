@@ -532,7 +532,8 @@ for adeck in adecks:
             continue
 
         # Open PSF, create product prefix/suffixes 
-        psfFH=open(config['products']['outputFile'],'a')
+        psfFile=os.path.join(workDir,config['products']['outputFile'])
+        psfFH=open(psfFile,'a')
         productPfx="{}-{}".format(config['products']['ident'],stormId)
         productSfx="{}_{}_s{}_e{}_c{}".format(config['products']['version'],sat['productId'],
                                               config['datetimes']['jcsDTG'].strftime(config['products']['DTFormat']),
