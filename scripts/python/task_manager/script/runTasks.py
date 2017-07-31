@@ -25,7 +25,9 @@ import traceback
 try:
     exePath=os.path.dirname(os.path.abspath(__file__))
     parentPath,childDir=os.path.split(exePath)
-    sys.path.insert(1,os.path.join(parentPath,"..","lib"))
+    path=os.path.join(parentPath,"..","lib")
+    print("path: {}".format(path))
+    sys.path.insert(1,path)
     sys.path.insert(2,os.path.join(parentPath,"plugins"))
 except:
    print "Unable to load local library paths"
