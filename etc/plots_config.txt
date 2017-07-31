@@ -1,1 +1,0 @@
-../scripts/python/plots/plots_config.txt
