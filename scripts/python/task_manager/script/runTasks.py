@@ -26,7 +26,6 @@ try:
     exePath=os.path.dirname(os.path.abspath(__file__))
     parentPath,childDir=os.path.split(exePath)
     path=os.path.join(parentPath,"..","lib")
-    print("path: {}".format(path))
     sys.path.insert(1,path)
     sys.path.insert(2,os.path.join(parentPath,"plugins"))
 except:
