@@ -2,8 +2,9 @@ RELEASE_NOTES.TXT -  NPOESS Preparatory Project (NPP) Tropical Cyclone (TC) Scie
              
 Author: Scott Longmore, Cooperative Institute for Research in the Atmosphere (CIRA) 
 Contact: Scott.Longmore@colostate.edu
-Last Edit: 2017-07-31
+Last Edit: 2017-09-25
 
+2017/09/25  v2.0.1 - Fix for query file gather for correct ordered files, scaling/offset/missing values corrections 
 2017/07/10  v2.0.0 - New python driver (mirs_tc.py), new data pool (scripts/python/pool), new operat (src/operat) 
 2015/05/15  v1.5.4 - Removed legacy version of nbevs routine insrc/oparet/nbevs.f90, updated besubs.f90 
 2015/05/15  v1.5.3 - OPERATIONAL RELEASE

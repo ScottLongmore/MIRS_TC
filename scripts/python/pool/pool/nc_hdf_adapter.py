@@ -10,6 +10,7 @@ class AdapterFile(object):
             self._in_file = h5py.File(self.filename, "r")
         else:
             self._in_file = netCDF4.Dataset(self.filename, "r")
+            self._in_file.set_auto_scale(False)
             
     def __contains__(self, b):
         if self.using_hdf:

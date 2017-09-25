@@ -4,6 +4,14 @@ import json
 import logging
 import pprint
 
+try:
+    exePath=os.path.dirname(os.path.abspath(__file__))
+    parentPath,childDir=os.path.split(exePath)
+    sys.path.insert(1,os.path.join(parentPath,"lib"))
+except:
+   print "Unable to load local library paths"
+   sys.exit(1)
+
 # Local
 import NDE
 import setup_logging

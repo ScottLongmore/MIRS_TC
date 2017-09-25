@@ -365,8 +365,8 @@ for adeck in adecks:
             links=dataLink['links']
             inputDataset=metadata[pool['dataset']]
             inputDatasetKey=dataLink['datasetKeys'][pool['dataset']]
-            inputFiles=poolFiles[pool['dataset']]
-            poolFiles[poolname]=MIRS_TC.getLinkFilenames(links, inputDataset, inputDatasetKey, inputFiles, poolname)
+            inputFilePaths=poolFiles[pool['dataset']]
+            poolFiles[poolname]=MIRS_TC.getLinkFilenames(links, inputDataset, inputDatasetKey, inputFilePaths, poolname)
 
             if len(poolFiles[poolname]) != len(poolFiles[pool['dataset']]):
 	       LOG.warning("Number of files doesn't match between {} and {} queries".format(pool['dataset'],poolname))
@@ -409,11 +409,26 @@ for adeck in adecks:
 	        LOG.warning("Problem querying pool: {}, skipping to next satellite".format(poolname))
                 break 
 
-
         # Check for error in linked dataset query loop 
         if skipFlag:
 	    LOG.warning("Problem in data linked query loop, skipping to next satellite".format(poolname))
             continue
+
+        # Apply scale/offset/threshold on packed varaibles 
+        for varname in pool['packed_variables']: 
+
+            var=pool['packed_variables'][varname]
+            packedVarFile="{}.{}.{}".format(varname,config['exts']['txt'],'packed')
+            utils.moveFile(satDir,varFiles[varname],satDir,packedVarFile)
+
+            packedVarFilename=os.path.join(satDir,packedVarFile)
+            filename=os.path.join(satDir,varFiles[varname])
+
+            status=MIRS_TC.scaleOffsetThreshPoolTextFile(var['scale'],var['offset'],var['lowThresh'],var['highThresh'],var['inputMissing'],var['outputMissing'],packedVarFilename,filename)
+            if status==False: 
+	        LOG.warning("Problem unpacking pool text file: {}, skipping to next satellite".format(filename))
+                break 
+
 
         # Running satcenter - determine if TC center is within range for satellite scanline center 
         #
