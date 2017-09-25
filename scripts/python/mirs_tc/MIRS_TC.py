@@ -18,11 +18,15 @@ import jsonschema
 import numpy
 import pandas as pd
 import math
+import pprint
 
 
 # Local modules
 import error_codes
 import utils
+
+# Pretty Printer
+pp=pprint.PrettyPrinter(indent=4)
 
 # Logging
 LOG = logging.getLogger(__name__)
@@ -239,24 +243,26 @@ def getInputAnalysisVars(filepath):
  
      return(vars)
 
-def getLinkFilenames(dataLink, inputDatasets, inputDatasetKey, inputFilenames, outputDataname):
+def getLinkFilenames(dataLink, inputDatasets, inputDatasetKey, inputFilePaths, outputDataname):
 
-    # remove paths from filenames
-    inputFiles=[]
-    for inputFilename in inputFilenames:
-        inputFiles.append(os.path.basename(inputFilename))
-
-    # Get linkID for input filenames
-    outputFilenames=[]
+    # Get dataset filenames, linkIDs
+    dataFileLinks={} 
     for dataset in inputDatasets:
-        filename=dataset.get('filename')
-        if filename in inputFiles:
-           linkID=dataset.get(inputDatasetKey)
-           try:
-               outFilename=os.path.join(dataLink[linkID][outputDataname].get('path'),dataLink[linkID][outputDataname].get('filename'))
-               outputFilenames.append(outFilename)
-           except:
-               LOG.warning("No matching {} filename: {}".format(outputDataname,filename))
+        dataFileLinks[dataset.get('filename')]=dataset.get(inputDatasetKey)
+
+    # Match input filenames to filenames 
+    outputFilenames=[]
+    for inputFilePath in inputFilePaths:
+        inputFile=os.path.basename(inputFilePath)
+        if inputFile in dataFileLinks:
+            try:
+                linkID=dataFileLinks[inputFile]
+                outputFile=dataLink[linkID][outputDataname].get('filename')
+                outFilename=os.path.join(dataLink[linkID][outputDataname].get('path'),outputFile)
+                outputFilenames.append(outFilename)
+                LOG.info("Linked Files input: {} output: {}".format(inputFile,outputFile))
+            except:
+                LOG.warning("No matching input file: {} in output: {}".format(inputFile,outputDataname))
 
     return(outputFilenames)
 
@@ -279,31 +285,75 @@ def extractTarFiles(tarCommand,tarFile,stringID,logDir):
  
     return(True)
 
+def poolType(value,dtype):
+
+    pValue=None
+    if dtype=='int':
+        pValue=int(value)
+    elif dtype=='float':
+        pValue=float(value)
+    else:
+        msg="Unknown Pool Type: {}".format(dtype)
+        utils.error(LOG,msg,error_codes.EX_IOERR)
+ 
+    return(pValue)
    
 def readPoolTextFile(filename): 
 
     try:
         fh=open(filename,"r")
-        nDims=fh.readline().rstrip().split(":")[1]
+        rank=int(fh.readline().rstrip().split(":")[1])
         dimsString=fh.readline().rstrip().split(":")[1]
         dims=map(int,dimsString.split(","))
-        dimType=fh.readline().rstrip().split(":")[1]
+        dtype=fh.readline().rstrip().split(":")[1]
         nRecords=reduce(operator.mul, dims, 1)
          
         records=[]
         for line in fh:
-            records.append(line.rstrip().split(','))
-        records=zip(*records) # flip dimenstions
+            fields=line.rstrip().split(',')
+            record=map(int,fields[:-1]) # convert indexes from string to int
+            record.append(poolType(fields[-1],dtype))
+            records.append(record)
+
+        records=map(list,zip(*records)) # flip dimenstions
     except:
-        LOG.warning("Problem reading {}".format(filename))
-        
+        LOG.warning("Problem reading pool text file: {}".format(filename))
+       
+    ptfDict={
+        'rank':rank,
+        'dims':dims,
+        'type':dtype, 
+        'records':records
+    }
       
-    return(records)
+    return(ptfDict)
+
+def writePoolTextFile(ptfDict,filename):
+
+    try:
+        newFH=open(filename,"w")
+        newFH.write("rank:{:03d}\n".format(ptfDict['rank']))
+        newFH.write("dimensions:{}\n".format(','.join(map(lambda x:"{:09d}".format(x), ptfDict['dims']))))
+        newFH.write("type:{}\n".format(ptfDict['type']))
+
+        records=numpy.array(ptfDict['records'][-1]).reshape(ptfDict['dims'])
+        for index,npValue in numpy.ndenumerate(records):
+            idxStr=','.join(map(lambda i:"{:09d}".format(i),index))
+            value=npValue.astype(ptfDict['type'])
+            newFH.write("{},{:015.5f}\n".format(idxStr,value))
+    
+        newFH.close()
+
+    except:
+        LOG.warning("Problem writing pool text file: {}".format(filename))
+        return False 
+
+    return True
 
 def createTimeFieldFiles(timeFilename):
 
-    records=readPoolTextFile(timeFilename) # index:records[0], epoch seconds record[1]
-   
+    ptfDict=readPoolTextFile(timeFilename) # index:records[0], epoch seconds record[1]
+
     timeVars={
         "years":"%Y",
         "months":"%m",
@@ -317,21 +367,51 @@ def createTimeFieldFiles(timeFilename):
     for timeVar in timeVars: 
        timeFiles[timeVar]="{}.txt".format(timeVar)
        timeFHs[timeVar]=open(timeFiles[timeVar],"w")
-       timeFHs[timeVar].write("rank:001\n")
-       timeFHs[timeVar].write("dimensions:{:09d}\n".format(len(records[1])))
+       timeFHs[timeVar].write("rank:{:03d}\n".format(ptfDict['rank']))
+       timeFHs[timeVar].write("dimensions:{}\n".format(','.join(map(lambda x:"{:09d}".format(x), ptfDict['dims']))))
        timeFHs[timeVar].write("type:int\n")
-       
 
-    for rn in xrange(0,len(records[-1])):
+    records=ptfDict['records'] 
+    for rn in xrange(0,ptfDict['dims'][-1]):
         DTG=datetime.datetime.fromtimestamp(float(records[1][rn]))
         for timeVar in timeVars:
-            timeFHs[timeVar].write("{},{:09d}\n".format(records[0][rn],int(DTG.strftime(timeVars[timeVar]))))
+            timeFHs[timeVar].write("{:09d},{:09d}\n".format(records[0][rn],int(DTG.strftime(timeVars[timeVar]))))
 
     for timeVar in timeVars: 
        timeFHs[timeVar].close()
 
     return True 
-    
+
+def scaleOffsetThreshPoolTextFile(scale,offset,lowThresh,highThresh,inputMissing,outputMissing,filename,newfilename):
+
+    try:
+        ptfDict=readPoolTextFile(filename) 
+
+        values=ptfDict['records'][-1]
+        for index in xrange(len(values)):
+            values[index]=scaleOffsetThreshValue(values[index],scale,offset,lowThresh,highThresh,inputMissing,outputMissing)
+
+        ptfDict['type']='float'
+        writePoolTextFile(ptfDict,newfilename) 
+
+    except:
+        LOG.warning("Problem with scaleOffsetThreshPoolTextFile") 
+        return False
+
+    return True
+
+def scaleOffsetThreshValue(value,scale,offset,lowThresh,highThresh,inputMissing,outputMissing):
+
+    newValue=None
+    if value != inputMissing:
+        newValue=(value*scale)+offset
+        if newValue < lowThresh or newValue > highThresh:
+            newValue = outputMissing
+    else:
+        newValue=outputMissing
+
+    return(newValue)
+           
 
 def createCOORTIMES(coordFile,timeFile,satIdent,instrIdent,coortimeFile):
    

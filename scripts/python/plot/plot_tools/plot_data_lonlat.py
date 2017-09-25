@@ -106,7 +106,8 @@ def plot_data_lonlat(time_0,plot_var,lons,lats,\
             cbar_format = '%6.0f'
         elif barbs_subplot_type == 'contour':       
             # --- plot plot_var as contour plot
-            cs = map.contourf(x_map,y_map, plot_var, vmin = plt_min, vmax = plt_max,zorder = 85)
+            #cs = map.contourf(x_map,y_map, plot_var, vmin = plt_min, vmax = plt_max,zorder = 85)
+            cs = map.contourf(x_map,y_map, plot_var, vmin = plt_min, vmax = plt_max, cmap=cmap, zorder = 85)
             cbar_format = '%6.0f'
         elif barbs_subplot_type == 'none':
             # --- plotting 2nd variables in color for barbs plot is not requested" 

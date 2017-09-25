@@ -70,8 +70,26 @@
         "dataset":"mirs_atms_img",
         "datasets":["mirs_atms_snd"],
         "query":{
-          "width_lon":30,
-          "height_lat":30
+          "width_lon":28,
+          "height_lat":28
+        },
+        "packed_variables":{
+          "LWP":{
+            "scale":0.01,
+            "offset":0.0,
+            "lowThresh":0.0,
+            "highThresh":500.0,
+            "inputMissing":-999.0,
+            "outputMissing":-999.0
+          },
+          "TPW":{
+            "scale":0.1,
+            "offset":0.0,
+            "lowThresh":0.0,
+            "highThresh":500.0,
+            "inputMissing":-999.0,
+            "outputMissing":-999.0
+          }
         }
       }
     }

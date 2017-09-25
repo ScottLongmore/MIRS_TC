@@ -96,8 +96,12 @@ FC	= gfortran
 # Compiler Flags 
 #-----------------------------
 
-DEBUG_FLAGS=-g -pg -fbacktrace
+#DEBUG_FLAGS=-g 
+DEBUG_FLAGS=-g -Wall -Wextra -Warray-temporaries -Wconversion -fimplicit-none -fbacktrace -ffree-line-length-0 -ffpe-trap=zero,overflow,underflow -finit-real=nan 
+#DEBUG_FLAGS=-g -pg -fbacktrace
+
 #DEBUG_FLAGS=-g -Mdwarf2 
+#DEBUG_FLAGS=-g -fdefault-real-8 -fdefault-double-8 
 #DEBUG_FLAGS=-g -Mdwarf2 -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8
 #COMMON_FLAGS=$(DEBUG_FLAGS) +O2 -DA2.0 	# HPUX
 #COMMON_FLAGS=$(DEBUG_FLAGS)  -DA2.0 -g77libs	# Linux
@@ -108,7 +112,8 @@ COMMON_FLAGS=$(DEBUG_FLAGS)                     # Linux
 # Common Flags 
 #------------
 
-FC_FLAGS=$(COMMON_FLAGS) -c -O2
+FC_FLAGS=$(COMMON_FLAGS) -c 
+#FC_FLAGS=$(COMMON_FLAGS) -c -O2
 FL_FLAGS=$(COMMON_FLAGS) -o
 
 #-------------
