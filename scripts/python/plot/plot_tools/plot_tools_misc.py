@@ -11,7 +11,7 @@ import re
 def plot_map(min_lon, min_lat, max_lon, max_lat,\
         grid_step_lon = 5, grid_step_lat = 5,\
         min_lat_width = 15., min_lon_width = 15.,\
-        projection = 'cyl', lat_0=0, lon_0=0, resolution='c',\
+        projection = 'cyl', lat_0=0, lon_0=0, resolution='h',\
         add_lon = 0, add_lat = 0):
 
     """
@@ -39,10 +39,10 @@ def plot_map(min_lon, min_lat, max_lon, max_lat,\
         urcrnrlat=max_lat + abs(add_lat), urcrnrlon=max_lon + abs(add_lon))
 
     # --- decorate map
-    map.drawcoastlines()
-    map.drawmapboundary()
-    map.drawparallels(np.arange(-85.0, 85.0, grid_step_lat), labels=[1,0,0,0]) # draw parallels
-    map.drawmeridians(np.arange(-180.0, 360.0, grid_step_lon),labels=[0,0,0,1]) # draw meridians
+    map.drawcoastlines(zorder=100)
+    map.drawmapboundary(zorder=101)
+    map.drawparallels(np.arange(-85.0, 85.0, grid_step_lat), labels=[1,0,0,0], zorder=102) # draw parallels
+    map.drawmeridians(np.arange(-180.0, 360.0, grid_step_lon),labels=[0,0,0,1], zorder=103) # draw meridians
 
     return map
 
