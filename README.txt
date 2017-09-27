@@ -2,10 +2,10 @@ README.TXT -  NPOESS Preparatory Project (NPP) Tropical Cyclone (TC) Science Alg
              
               Author: Scott Longmore, Cooperative Institute for Research in the Atmosphere (CIRA) 
               Contact: Scott.Longmore@colostate.edu
-              Last Edit: 2017-09-25
+              Last Edit: 2017-09-26
 
 
-Version Number: v2.0.1
+Version Number: v2.0.2
 
 Release Date: alpha 
 

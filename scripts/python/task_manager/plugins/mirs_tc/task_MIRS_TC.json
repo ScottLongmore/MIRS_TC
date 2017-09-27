@@ -19,7 +19,7 @@
         "algorithmLogMessageContext":"MIRS_TC",
         "algorithmLogMessageError":"ERROR:",
         "algorithmLogMessageWarn":"WARNING:",
-        "SYS_DIR":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC",
+        "SYS_DIR":"/mnt/ssd-data2/MIRS_TC/system/ops/MIRS_TC",
         "PYTHON":"/home/slongmore/local/anaconda2/bin/python",
         "WGRIB":"/home/slongmore/local/bin/wgrib2",
         "TAR":"/bin/tar"
@@ -30,9 +30,9 @@
       "outputDir":"output"
     },
     "MIRS_TC":{
-      "exe":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC/scripts/python/mirs_tc/mirs_tc.py",
+      "exe":"/mnt/ssd-data2/MIRS_TC/system/ops/MIRS_TC/scripts/python/mirs_tc/mirs_tc.py",
       "configs":{
-        "mirs_tc":"/mnt/ssd-data2/MIRS_TC/system/dev/MIRS_TC/scripts/python/mirs_tc/MIRS_TC.json"
+        "mirs_tc":"/mnt/ssd-data2/MIRS_TC/system/ops/MIRS_TC/scripts/python/mirs_tc/MIRS_TC.json"
       }
     }
   },
@@ -47,7 +47,7 @@
   },
   "inputs": {
     "adeck": {
-      "dirs":["/mnt/ssd-data1/ATCF/DOD"],
+      "dirs":["/mnt/ssd-data1/ATCF/DOD","/mnt/ssd-data1/ATCF/NHC"],
       "re":"^a(?P<stormId>(?P<basinId>\\w{2})(?P<stormNum>\\d{2})(?P<year>%Y))\\.dat",
       "PCFkey":"adeck_input"
     },
