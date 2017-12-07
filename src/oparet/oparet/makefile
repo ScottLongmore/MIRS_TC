@@ -97,8 +97,8 @@ FC	= gfortran
 #-----------------------------
 
 #DEBUG_FLAGS=-g 
-DEBUG_FLAGS=-g -Wall -Wextra -Warray-temporaries -Wconversion -fimplicit-none -fbacktrace -ffree-line-length-0 -ffpe-trap=zero,overflow,underflow -finit-real=nan 
-#DEBUG_FLAGS=-g -pg -fbacktrace
+#DEBUG_FLAGS=-g -Wall -Wextra -Warray-temporaries -Wconversion -fimplicit-none -fbacktrace -ffree-line-length-0 -ffpe-trap=zero,overflow,underflow -finit-real=nan 
+DEBUG_FLAGS=-g -pg -fbacktrace
 
 #DEBUG_FLAGS=-g -Mdwarf2 
 #DEBUG_FLAGS=-g -fdefault-real-8 -fdefault-double-8 

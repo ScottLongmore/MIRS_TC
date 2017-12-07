@@ -24,6 +24,7 @@ import pprint
 # Local modules
 import error_codes
 import utils
+import fileAction
 
 # Pretty Printer
 pp=pprint.PrettyPrinter(indent=4)
@@ -31,7 +32,6 @@ pp=pprint.PrettyPrinter(indent=4)
 # Logging
 LOG = logging.getLogger(__name__)
 
-DTFormat="%Y%m%d%H%M%S%f"
 mirsTimeQueryOffsets={
    0:{"after":0,"before":21600},
    1:{"after":3600,"before":21600},
@@ -69,10 +69,9 @@ gfsGribFields={
     "p1070":":PRMSL:mean sea level:"
 }
 
+DTFormat="%Y%m%d%H%M%S%f"
 erad=6371.0 # Radius of Earth
 dtr=math.pi/180.0 # Degrees to radians conversion
-
-
 
 def last_synoptic_datetime(dt):
 
