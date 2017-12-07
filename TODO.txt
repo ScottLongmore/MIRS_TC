@@ -1,0 +1,41 @@
+all:
+- Update MIRS_TC to HISA in documentation, code headers
+
+driver:
+- Clean up MIRS_TC.json
+- Break MIRS_TC.json into sub JSON files by section or theme
+- Add schemas for JSON files
+
+dataset classes:
+- Refactor dataset parent/child classes ATCF/ATMS/GFS to handle multiple file sources, remove datalinking in driver
+
+MIRS_TC library:
+- Move GRIB field definitions in MIRS_TC.py to gfs_grib.json file
+
+convert2netCDF:
+- Refactor convert2netCDF with plugin routines with standard interface e.g. routine(config,varaibles/attributes)
+- Refactor convert2netCDF to handle attributes with routines 
+- Convert convert2netCDF.py script to API
+
+plotting:
+- Call plot code API directly, remove system call to main_read_plot_xya.py 
+
+scheduler:
+- Refactor plgnMIRS_TC.py TASKS routine ATCF/ATMS/GFS file finding logic to MIRS_TC.py routine
+- Refactor plgnMIRS_TC.py WORK routine PCF logic to NDE.py routine
+
+case driver:
+- Create case run script (with input time ranges, basins, etc)
+
+long term:
+- Refactor satcenter to python routine
+- Address pool query text files and oparet data input options:
+  1) pool output text files include and are ordered by lat/lon (dump indexes), or
+  2) netCDF file (means including netCDF v4.x COTS library with HDF/zlib in source code)
+- Refactor ploting code
+  - Remove nested dependence plot_data_latlon within read_plot_config
+  - Add data structures for config/plotting/varaible parameters
+  - Convert plotting config file to JSON
+  - Add standard contour levels for plot standarization
+- Refactor ShortTermTrack to python routine/API
+- Refactor afdeck to python routine
