@@ -1,1 +1,0 @@
-python tests/unit_test_suite.py tests/end_to_end_tests/

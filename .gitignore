@@ -2,3 +2,9 @@
 *.mod
 *.x
 *.pyc
+bin/
+src/
+test/
+scripts/bash
+scripts/python/pool
+scripts/python/plot
