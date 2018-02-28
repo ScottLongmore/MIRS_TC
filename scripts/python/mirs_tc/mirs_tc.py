@@ -38,7 +38,7 @@ except:
 import setup_logging
 import error_codes
 import utils
-import MIRS_TC 
+import libmirs_tc as mirs_tc 
 import pool.pool as pool_api
 
 # Setup Logging using logging templates
@@ -86,7 +86,7 @@ if msg:
 
 # Determine date/times information 
 LOG.info("Setting date/time variables")
-config['datetimes']=MIRS_TC.datetimes(config['inputs']["job_coverage_start"],config['inputs']["job_coverage_end"])
+config['datetimes']=mirs_tc.datetimes(config['inputs']["job_coverage_start"],config['inputs']["job_coverage_end"])
 
 # Create/update working sub-directories
 workDir=config['inputs']['working_directory']
@@ -132,7 +132,7 @@ for dataname in config['datasets']:
 # Create metadata link map for configuration specified datasets (mirs_atms_img/snd) 
 for dataname in config['datalinks']: 
     datasetKeys=config['datalinks'][dataname]['datasetKeys']
-    config['datalinks'][dataname]['links']=MIRS_TC.datalinks(metadata,datasetKeys)
+    config['datalinks'][dataname]['links']=mirs_tc.datalinks(metadata,datasetKeys)
     LOG.info("Linked meta-data objects for {}".format(dataname))
 
 # Run metadata object filter methods
@@ -171,7 +171,7 @@ if os.path.isfile(gfsPackFile):
    LOG.info("GFS pack file: {}  already exists, continuing".format(gfsPackFile))
 else:
    LOG.info("Creating gfs pack file: {}".format(gfsPackFile))
-   if not MIRS_TC.grib2pack(gfsDate,gfsHour,gfsFhour,gfsGribFile,config['inputs']['WGRIB'],config['programs']['bin2pack']['exe'],logDir):
+   if not mirs_tc.grib2pack(gfsDate,gfsHour,gfsFhour,gfsGribFile,config['inputs']['WGRIB'],config['programs']['bin2pack']['exe'],logDir):
        msg="Problem converting to pack file from grib file: {}".format(gfsGribFile)
        utils.error(LOG,msg,error_codes.EX_IOERR)
    
@@ -278,7 +278,7 @@ for adeck in adecks:
         continue 
 
     # Retreive Short Term Track 00Z analsys values
-    stormVars=MIRS_TC.getInputAnalysisVars(afdeckInputFile)
+    stormVars=mirs_tc.getInputAnalysisVars(afdeckInputFile)
     #for stormname in stormVars:
     #    print("{} : {}".format(stormname,stormVars[stormname]))
 
@@ -336,7 +336,7 @@ for adeck in adecks:
             continue 
 
         # Extract files from pool tar file
-        if not MIRS_TC.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,pool['dataset']),logDir):
+        if not mirs_tc.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,pool['dataset']),logDir):
             LOG.warning("Problem extracting files from tar file: {}, skipping to next satellite".format(tarFile))
             continue 
 
@@ -366,7 +366,7 @@ for adeck in adecks:
             inputDataset=metadata[pool['dataset']]
             inputDatasetKey=dataLink['datasetKeys'][pool['dataset']]
             inputFilePaths=poolFiles[pool['dataset']]
-            poolFiles[poolname]=MIRS_TC.getLinkFilenames(links, inputDataset, inputDatasetKey, inputFilePaths, poolname)
+            poolFiles[poolname]=mirs_tc.getLinkFilenames(links, inputDataset, inputDatasetKey, inputFilePaths, poolname)
 
             if len(poolFiles[poolname]) != len(poolFiles[pool['dataset']]):
 	       LOG.warning("Number of files doesn't match between {} and {} queries".format(pool['dataset'],poolname))
@@ -390,7 +390,7 @@ for adeck in adecks:
                 break 
 
             # Extract files from pool tar file
-            if not MIRS_TC.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,poolname),logDir):
+            if not mirs_tc.extractTarFiles(config['inputs']['TAR'],tarFile,"{}_{}_{}".format(stormId,satId,poolname),logDir):
                 LOG.warning("Problem extracting files from tar file: {}, skipping to next satellite".format(tarFile))
                 skipFlag=True
                 break 
@@ -424,7 +424,7 @@ for adeck in adecks:
             packedVarFilename=os.path.join(satDir,packedVarFile)
             filename=os.path.join(satDir,varFiles[varname])
 
-            status=MIRS_TC.scaleOffsetThreshPoolTextFile(var['scale'],var['offset'],var['lowThresh'],var['highThresh'],var['inputMissing'],var['outputMissing'],packedVarFilename,filename)
+            status=mirs_tc.scaleOffsetThreshPoolTextFile(var['scale'],var['offset'],var['lowThresh'],var['highThresh'],var['inputMissing'],var['outputMissing'],packedVarFilename,filename)
             if status==False: 
 	        LOG.warning("Problem unpacking pool text file: {}, skipping to next satellite".format(filename))
                 break 
@@ -440,7 +440,7 @@ for adeck in adecks:
         satcenter=config['programs']['satcenter']
 
         # Create time fields files from pool epoch text file (e.g. ScanLine_Center_Times.txt) 
-        MIRS_TC.createTimeFieldFiles(satcenter['timeFile'])
+        mirs_tc.createTimeFieldFiles(satcenter['timeFile'])
 
         # Link COORDINATES files to current dir
         utils.linkFile(stormDir,afdeck['outputs']['coordFile'],satDir,afdeck['outputs']['coordFile'])
@@ -483,7 +483,7 @@ for adeck in adecks:
         oparet=config['programs']['oparet']
 
 	# Create COORTIMES file from, COORDINATES, TIMES, satellite and instrument identifiers
-        status=MIRS_TC.createCOORTIMES(afdeck['outputs']['coordFile'], satcenter['outputs']['timesFile'], satId, instr.upper(), oparet['inputs']['COORTIMES'])
+        status=mirs_tc.createCOORTIMES(afdeck['outputs']['coordFile'], satcenter['outputs']['timesFile'], satId, instr.upper(), oparet['inputs']['COORTIMES'])
  
         # Check return status
 	if not status:
